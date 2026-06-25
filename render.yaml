@@ -1,0 +1,29 @@
+# Render Blueprint — deploys the TrustOps BACKGROUND WORKER only.
+# The Next.js web app stays on Vercel (which ignores this file); Render ignores
+# vercel.json. The worker is a long-running poll loop, so it runs as a Render
+# "worker" service (no HTTP port) built from the repo-root Dockerfile.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick the TrustOps repo.
+# Render reads this file, creates the service, then prompts for the env vars
+# marked `sync: false` (they are never stored in git).
+services:
+  - type: worker
+    name: trustops-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    branch: main
+    # Background workers have no free tier on Render; "starter" is the cheapest.
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      # Required — set when prompted (Supabase project URL + service_role key).
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Optional (ANTHROPIC_API_KEY, RESEND_API_KEY, EMAIL_FROM, WHATSAPP_TOKEN,
+      # WHATSAPP_PHONE_ID) are intentionally NOT declared here: leaving them unset
+      # keeps the worker in safe simulated-send mode. Add them in the Render
+      # dashboard later only when you have real credentials.
