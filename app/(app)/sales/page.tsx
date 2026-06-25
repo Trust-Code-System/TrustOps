@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 
 /**
  * Sales are recorded as invoices, and the brief defines no separate sales-list
- * screen (only "Record sale" + the Invoices list). The Sales nav destination
- * therefore points at the canonical invoices list; the FAB still routes to
- * /sales/new to record a sale.
+ * screen. Nav now points "Sales" at /sales/new (record) and "Invoices" at the
+ * list, so nothing links here anymore; this redirect is just a safety net for
+ * old /sales links, sending them to the canonical invoices list.
  */
 export default function SalesPage() {
   redirect("/invoices");

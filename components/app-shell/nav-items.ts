@@ -25,7 +25,9 @@ export interface NavItem {
  */
 export const SIDEBAR_ITEMS: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Sales", href: "/sales", icon: ReceiptText },
+  // "Sales" is the record-a-sale action (a sale becomes an invoice); the
+  // Invoices item below is the list. They must point to different routes.
+  { label: "Sales", href: "/sales/new", icon: ReceiptText },
   { label: "Customers", href: "/customers", icon: Users },
   { label: "Products", href: "/products", icon: Package },
   { label: "Invoices", href: "/invoices", icon: FileText },
@@ -36,17 +38,20 @@ export const SIDEBAR_ITEMS: NavItem[] = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-/** Mobile tab bar: 2 left, FAB, 1 right + a More button (rendered separately). */
+/**
+ * Mobile tab bar: 2 left, FAB, 1 right + a More button (rendered separately).
+ * Recording a sale is the center FAB (→/sales/new), so the bar surfaces the
+ * Invoices list instead of a redundant "Sales" tab.
+ */
 export const TAB_ITEMS: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Sales", href: "/sales", icon: ReceiptText },
+  { label: "Invoices", href: "/invoices", icon: FileText },
   { label: "Customers", href: "/customers", icon: Users },
 ];
 
 /** Overflow destinations shown in the mobile "More" sheet. */
 export const MORE_ITEMS: NavItem[] = [
   { label: "Products", href: "/products", icon: Package },
-  { label: "Invoices", href: "/invoices", icon: FileText },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Expenses", href: "/expenses", icon: WalletCards },
   { label: "Reports", href: "/reports", icon: FileDown },

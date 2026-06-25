@@ -17,7 +17,7 @@ export function BottomTabBar() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const left = TAB_ITEMS.slice(0, 2); // Home, Sales
+  const left = TAB_ITEMS.slice(0, 2); // Home, Invoices
   const right = TAB_ITEMS.slice(2, 3); // Customers
   const moreActive = MORE_ITEMS.some(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),
