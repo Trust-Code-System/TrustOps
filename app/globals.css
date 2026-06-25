@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — the single source of truth for all UI.
+ * Mirrors trustops-design-system.md §1. Do not hardcode hex anywhere else.
+ */
+:root {
+  /* Brand — Indigo */
+  --color-primary-50: #eef0fb;
+  --color-primary-100: #d9ddf6;
+  --color-primary-200: #b3bbed;
+  --color-primary-300: #8d99e4;
+  --color-primary-400: #6777db;
+  --color-primary-500: #4255d2; /* base brand */
+  --color-primary-600: #3544a8; /* primary button, links */
+  --color-primary-700: #28337e; /* hover/pressed */
+  --color-primary-800: #1b2254;
+  --color-primary-900: #0e122a;
+
+  /* Neutrals — near-true gray, slight cool cast */
+  --color-gray-50: #f8f9fa; /* app background */
+  --color-gray-100: #f1f3f5; /* subtle fill, hover row */
+  --color-gray-200: #e9ecef; /* borders, dividers */
+  --color-gray-300: #dee2e6; /* input border */
+  --color-gray-400: #ced4da; /* disabled border */
+  --color-gray-500: #adb5bd; /* placeholder text */
+  --color-gray-600: #868e96; /* muted/secondary text */
+  --color-gray-700: #495057; /* body text secondary */
+  --color-gray-800: #343a40; /* body text */
+  --color-gray-900: #212529; /* headings, primary text */
+
+  /* Semantic — Money & status. Use ONLY for meaning. */
+  --color-success-50: #e6f7ef;
+  --color-success-500: #10a769; /* paid, revenue up, in stock */
+  --color-success-700: #0a7048;
+
+  --color-danger-50: #fdeaea;
+  --color-danger-500: #e03131; /* unpaid, revenue down, out of stock */
+  --color-danger-700: #a51f1f;
+
+  --color-warning-50: #fff6e6;
+  --color-warning-500: #f08c00; /* low stock, due soon, pending */
+  --color-warning-700: #b36a00;
+
+  --color-info-50: #e7f1fb;
+  --color-info-500: #1c7ed6; /* neutral informational only */
+
+  /* Surfaces */
+  --surface-page: var(--color-gray-50);
+  --surface-card: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-overlay: rgba(14, 18, 42, 0.45); /* modal scrim */
+
+  /* Text */
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-700);
+  --text-muted: var(--color-gray-600);
+  --text-on-primary: #ffffff;
+  --text-disabled: var(--color-gray-500);
+
+  /* Border */
+  --border-subtle: var(--color-gray-200);
+  --border-default: var(--color-gray-300);
+  --border-strong: var(--color-gray-400);
+  --border-focus: var(--color-primary-500);
+
+  /* Type */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-numeric: var(--font-inter), sans-serif;
+
+  /* Spacing — 4px grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius / border */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+  --border-width: 1px;
+
+  /* Shadows — soft, low, never heavy */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.08),
+    0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08),
+    0 4px 6px -2px rgba(16, 24, 40, 0.03);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 240ms;
+}
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface-page);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Money & table-numeric values line up like a bank statement. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Always-visible keyboard focus ring. */
+  :focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+
+  /* Respect reduced motion: disable non-essential transitions. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Print isolation (Reports → "Save as PDF"). The reports page wraps its
+     printable summary in #print-area; everything else (app chrome, range
+     form, action buttons) is hidden so the PDF is the report alone. */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    #print-area,
+    #print-area * {
+      visibility: visible;
+    }
+    #print-area {
+      position: absolute;
+      inset: 0;
+      padding: 0;
+    }
+    .no-print {
+      display: none !important;
+    }
+  }
+}
