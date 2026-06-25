@@ -1,7 +1,8 @@
 "use client";
 
 import { FileDown, Printer } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 
 /**
  * Report export controls. CSV downloads from the server route (RLS-scoped);

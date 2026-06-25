@@ -1,6 +1,5 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { formatNaira } from "@/lib/money";
 import { getSessionContext } from "@/modules/auth/session";
@@ -437,11 +436,12 @@ export async function getAnalyticsDashboard(
   const ctx = await getSessionContext();
   if (!ctx) throw new Error("Not authenticated");
   const range = normalizeRange(input);
-  return unstable_cache(
-    () => getAnalyticsDashboardUncached(range),
-    ["analytics-dashboard", ctx.profile.company_id, range.from, range.to],
-    { revalidate: 60 },
-  )();
+  // NOTE: no unstable_cache here. The query runs under the caller's RLS context,
+  // which reads auth cookies — and cookies() is disallowed inside unstable_cache
+  // ("Accessing Dynamic data sources inside a cache scope is not supported").
+  // Recompute per request; reintroduce caching later via a cookie-free, company-
+  // scoped path (e.g. service-role client keyed by company_id) if it's needed.
+  return getAnalyticsDashboardUncached(range);
 }
 
 export async function listExpenses(opts: {

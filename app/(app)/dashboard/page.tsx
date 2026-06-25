@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Money } from "@/components/ui/money";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
