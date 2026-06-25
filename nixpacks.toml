@@ -7,8 +7,9 @@
 # SUPABASE_SERVICE_ROLE_KEY (plus ANTHROPIC_API_KEY / RESEND_API_KEY / EMAIL_FROM
 # / WHATSAPP_* if the worker should do real AI / messaging).
 
+# tsx is a regular dependency (see package.json), so a plain prod install has it.
 [phases.install]
-cmds = ["npm ci --include=dev"]
+cmds = ["npm ci"]
 
 # Skip the auto-detected `next build` — the worker doesn't need it.
 [phases.build]
