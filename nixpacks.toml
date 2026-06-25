@@ -1,0 +1,18 @@
+# Railway / Nixpacks config — this service runs the BACKGROUND WORKER ONLY.
+# The Next.js web app is deployed on Vercel; here we only run the jobs poller
+# (modules/jobs/worker.ts). So: install dependencies (including devDeps, because
+# `tsx` lives there), do NO `next build`, and start the worker.
+#
+# Required env vars on this service: NEXT_PUBLIC_SUPABASE_URL and
+# SUPABASE_SERVICE_ROLE_KEY (plus ANTHROPIC_API_KEY / RESEND_API_KEY / EMAIL_FROM
+# / WHATSAPP_* if the worker should do real AI / messaging).
+
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
+# Skip the auto-detected `next build` — the worker doesn't need it.
+[phases.build]
+cmds = []
+
+[start]
+cmd = "npm run worker:prod"
