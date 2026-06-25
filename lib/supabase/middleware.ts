@@ -42,7 +42,10 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  // "/" is the public marketing landing page — exact match so it doesn't
+  // whitelist every route (startsWith("/") would match everything).
+  const isPublic =
+    pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   // API routes authenticate themselves (CRON_SECRET, getSessionContext, etc.)
   // and must return their own status codes — never a 307 redirect to the HTML
   // login page. Redirecting here breaks Vercel Cron (it would 307 instead of
