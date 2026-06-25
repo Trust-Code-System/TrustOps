@@ -43,8 +43,13 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  // API routes authenticate themselves (CRON_SECRET, getSessionContext, etc.)
+  // and must return their own status codes — never a 307 redirect to the HTML
+  // login page. Redirecting here breaks Vercel Cron (it would 307 instead of
+  // running the job) and gives browser fetches an HTML body instead of JSON.
+  const isApi = pathname.startsWith("/api");
 
-  if (!user && !isPublic) {
+  if (!user && !isPublic && !isApi) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
