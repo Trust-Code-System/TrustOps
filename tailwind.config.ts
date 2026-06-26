@@ -104,6 +104,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: "var(--font-sans)",
+        display: "var(--font-display)",
         numeric: "var(--font-numeric)",
       },
       fontSize: {
