@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Money } from "@/components/ui/money";
 import { Select } from "@/components/ui/select";
@@ -141,19 +142,17 @@ export function ExpensesClient({
                 </option>
               ))}
             </Select>
-            <Input
-              type="date"
+            <DatePicker
               value={filters.from}
-              onChange={(e) => push({ from: e.target.value, page: 1 })}
+              onChange={(v) => push({ from: v, page: 1 })}
               aria-label="From date"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-44"
             />
-            <Input
-              type="date"
+            <DatePicker
               value={filters.to}
-              onChange={(e) => push({ to: e.target.value, page: 1 })}
+              onChange={(v) => push({ to: v, page: 1 })}
               aria-label="To date"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-44"
             />
           </div>
         </div>

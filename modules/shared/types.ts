@@ -332,3 +332,23 @@ export type AiInsight = {
   body: string;
   created_at: ISODateTime;
 };
+
+export type SupportRequestStatus = "open" | "resolved";
+
+/**
+ * A Help Center report sent from any tenant to the platform operator. Stored in
+ * a cross-tenant table that only the service-role client (gated to the platform
+ * admin in app code) can read — see supabase/migrations/0011_support.sql.
+ */
+export type SupportRequest = {
+  id: UUID;
+  company_id: UUID | null;
+  user_id: UUID | null;
+  company_name: string | null;
+  name: string;
+  email: string | null;
+  subject: string;
+  message: string;
+  status: SupportRequestStatus;
+  created_at: ISODateTime;
+};

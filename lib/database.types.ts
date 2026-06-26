@@ -28,6 +28,7 @@ import type {
   AiMessage,
   AiUsage,
   AiInsight,
+  SupportRequest,
 } from "@/modules/shared/types";
 
 type Row<T> = T;
@@ -67,6 +68,7 @@ export interface Database {
       ai_messages: Table<AiMessage>;
       ai_usage: Table<AiUsage>;
       ai_insights: Table<AiInsight>;
+      support_requests: Table<SupportRequest>;
     };
     Views: Record<string, never>;
     Functions: {

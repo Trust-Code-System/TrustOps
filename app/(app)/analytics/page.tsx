@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Money } from "@/components/ui/money";
 import { cn } from "@/lib/utils";
@@ -155,14 +155,12 @@ export default async function AnalyticsPage({
         </div>
 
         <form className="flex items-end gap-2">
-          <label className="space-y-1">
-            <span className="sr-only">From</span>
-            <Input type="date" name="from" defaultValue={data.range.from} aria-label="From" />
-          </label>
-          <label className="space-y-1">
-            <span className="sr-only">To</span>
-            <Input type="date" name="to" defaultValue={data.range.to} aria-label="To" />
-          </label>
+          <div className="w-44">
+            <DatePicker name="from" defaultValue={data.range.from} aria-label="From" />
+          </div>
+          <div className="w-44">
+            <DatePicker name="to" defaultValue={data.range.to} aria-label="To" />
+          </div>
           <Button type="submit" variant="secondary">
             Apply
           </Button>

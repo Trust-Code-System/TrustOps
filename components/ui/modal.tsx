@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,10 @@ export function Modal({
   const titleId = React.useId();
   const descId = React.useId();
 
+  // Only portal after mount so server render and first client render match.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
   React.useEffect(() => {
     if (!open) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -51,9 +56,9 @@ export function Modal({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
       role="dialog"
@@ -61,12 +66,13 @@ export function Modal({
       aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}
     >
-      {/* Scrim */}
+      {/* Scrim — portaled to <body> so it covers the whole viewport (incl. the
+          fixed top bar) and frosts everything behind the dialog uniformly. */}
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-[var(--surface-overlay)]"
+        className="absolute inset-0 bg-[var(--surface-overlay)] backdrop-blur-sm"
         tabIndex={-1}
       />
 
@@ -116,6 +122,7 @@ export function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

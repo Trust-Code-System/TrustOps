@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionContext } from "@/modules/auth/session";
+import { getSessionContext, isPlatformAdmin } from "@/modules/auth/session";
 import {
   listInAppNotifications,
   unreadNotificationCount,
@@ -47,6 +47,7 @@ export default async function AppLayout({
       branches={(branches as Branch[] | null) ?? []}
       notifications={notifications}
       unreadCount={unreadCount}
+      isPlatformAdmin={isPlatformAdmin(ctx.email)}
     >
       {children}
     </AppShell>

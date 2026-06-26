@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoreHorizontal, Plus } from "lucide-react";
-import { TAB_ITEMS, MORE_ITEMS, type NavItem } from "./nav-items";
+import { TAB_ITEMS, MORE_ITEMS, ADMIN_ITEM, type NavItem } from "./nav-items";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
 
@@ -13,13 +13,15 @@ import { cn } from "@/lib/utils";
  * The FAB overlaps the bar and is always one tap away. Overflow destinations
  * live in a "More" sheet (§2.1). Hidden at >=768px where the sidebar takes over.
  */
-export function BottomTabBar() {
+export function BottomTabBar({ isPlatformAdmin }: { isPlatformAdmin?: boolean }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
   const left = TAB_ITEMS.slice(0, 2); // Home, Invoices
   const right = TAB_ITEMS.slice(2, 3); // Customers
-  const moreActive = MORE_ITEMS.some(
+  // Admin only surfaces for the platform operator.
+  const moreItems = isPlatformAdmin ? [...MORE_ITEMS, ADMIN_ITEM] : MORE_ITEMS;
+  const moreActive = moreItems.some(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),
   );
 
@@ -65,7 +67,7 @@ export function BottomTabBar() {
 
       <Modal open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
         <nav className="flex flex-col" aria-label="More destinations">
-          {MORE_ITEMS.map((item) => {
+          {moreItems.map((item) => {
             const Icon = item.icon;
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);

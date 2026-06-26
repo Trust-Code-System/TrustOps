@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, GitBranch, LogOut } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, GitBranch, LogOut, ShieldCheck } from "lucide-react";
 import { Branch, Notification } from "@/modules/shared/types";
 import { signOut } from "@/modules/auth/actions";
 import { NotificationsBell } from "./notifications-bell";
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 interface TopBarProps {
@@ -16,6 +18,7 @@ interface TopBarProps {
   onBranchChange: (branchId: string) => void;
   notifications: Notification[];
   unreadCount: number;
+  isPlatformAdmin?: boolean;
 }
 
 /**
@@ -31,6 +34,7 @@ export function TopBar({
   onBranchChange,
   notifications,
   unreadCount,
+  isPlatformAdmin,
 }: TopBarProps) {
   const currentBranch =
     branches.find((b) => b.id === currentBranchId) ?? branches[0];
@@ -38,7 +42,7 @@ export function TopBar({
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border-subtle bg-surface-card px-4">
       <div className="flex items-center gap-3">
-        <span className="text-body-strong text-primary-700">TrustOps</span>
+        <Logo size={26} />
         <span className="hidden text-small text-text-muted sm:inline">
           {companyName}
         </span>
@@ -95,6 +99,15 @@ export function TopBar({
             <p className="text-small font-[600] text-text-primary">{userName}</p>
             <p className="text-caption capitalize text-text-muted">{userRole}</p>
           </div>
+          {isPlatformAdmin && (
+            <Link
+              href="/admin"
+              className="flex w-full items-center gap-2 border-b border-border-subtle px-3 py-2 text-left text-small text-text-secondary hover:bg-gray-100"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              Admin
+            </Link>
+          )}
           <form action={signOut}>
             <button
               type="submit"

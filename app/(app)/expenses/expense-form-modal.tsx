@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -119,11 +120,7 @@ export function ExpenseFormModal({
             />
           </FormField>
           <FormField id="spentAt" label="Date" required>
-            <Input
-              type="date"
-              value={spentAt}
-              onChange={(e) => setSpentAt(e.target.value)}
-            />
+            <DatePicker value={spentAt} onChange={setSpentAt} aria-label="Date" />
           </FormField>
         </div>
 

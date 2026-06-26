@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Building2, Store, Users, Bell, Sparkles, type LucideIcon } from "lucide-react";
+import { Building2, Store, Users, Bell, BrainCircuit, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SettingsTab = {
@@ -15,7 +15,7 @@ const ICONS: Record<string, LucideIcon> = {
   branches: Store,
   staff: Users,
   notifications: Bell,
-  ai: Sparkles,
+  ai: BrainCircuit,
 };
 
 /**
