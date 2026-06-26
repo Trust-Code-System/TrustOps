@@ -6,6 +6,7 @@ import { Mail, Lock } from "lucide-react";
 import { login } from "@/modules/auth/actions";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Alert } from "@/components/ui/alert";
 
@@ -45,9 +46,8 @@ export function LoginForm() {
           label="Password"
           error={state?.fieldErrors?.password}
         >
-          <Input
+          <PasswordInput
             name="password"
-            type="password"
             autoComplete="current-password"
             placeholder="••••••••"
             leadingIcon={<Lock />}

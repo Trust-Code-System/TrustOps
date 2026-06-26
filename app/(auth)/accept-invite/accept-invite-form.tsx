@@ -4,7 +4,7 @@ import { useFormState } from "react-dom";
 import { Lock } from "lucide-react";
 import { acceptInvite } from "@/modules/auth/actions";
 import { FormField } from "@/components/ui/form-field";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Alert } from "@/components/ui/alert";
 
@@ -33,9 +33,8 @@ export function AcceptInviteForm() {
           helper="At least 8 characters."
           error={state?.fieldErrors?.password}
         >
-          <Input
+          <PasswordInput
             name="password"
-            type="password"
             autoComplete="new-password"
             placeholder="••••••••"
             leadingIcon={<Lock />}
@@ -49,9 +48,8 @@ export function AcceptInviteForm() {
           required
           error={state?.fieldErrors?.confirmPassword}
         >
-          <Input
+          <PasswordInput
             name="confirmPassword"
-            type="password"
             autoComplete="new-password"
             placeholder="••••••••"
             leadingIcon={<Lock />}

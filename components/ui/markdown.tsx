@@ -87,7 +87,7 @@ export function Markdown({ children }: { children: string }) {
             );
           },
           pre: ({ children }) => (
-            <pre className="overflow-x-auto rounded-md bg-gray-900 p-3 text-gray-50">
+            <pre className="overflow-x-auto rounded-md border border-border-subtle bg-surface-page p-3 text-text-secondary">
               {children}
             </pre>
           ),
