@@ -58,12 +58,12 @@ export default async function DashboardPage() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        {/* Today's revenue — dark hero card */}
-        <div className="relative flex flex-col justify-between overflow-hidden rounded-lg bg-gray-900 p-6 shadow-md">
-          <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/5 blur-xl" />
+        {/* Today's revenue — brand gradient hero card */}
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 p-6 shadow-md">
+          <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/15 blur-xl" />
           <div className="relative flex items-start justify-between">
-            <span className="text-small text-gray-300">Today&apos;s Revenue</span>
-            <Eye className="h-4 w-4 text-gray-400" aria-hidden="true" />
+            <span className="text-small text-white/80">Today&apos;s Revenue</span>
+            <Eye className="h-4 w-4 text-white/70" aria-hidden="true" />
           </div>
           <div className="relative mt-6">
             <Money

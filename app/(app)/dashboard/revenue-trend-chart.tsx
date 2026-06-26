@@ -64,7 +64,7 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
                 />
                 <div
                   className={
-                    "pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[11px] tabular text-white transition-opacity " +
+                    "pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded border border-border bg-surface-raised px-2 py-1 text-[11px] tabular text-text-primary shadow-md transition-opacity " +
                     (d.isToday ? "opacity-100" : "opacity-0 group-hover:opacity-100")
                   }
                 >
