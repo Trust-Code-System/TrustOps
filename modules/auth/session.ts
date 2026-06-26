@@ -1,6 +1,6 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/modules/shared/types";
 
@@ -48,4 +48,29 @@ export const ADMIN_ROLES = ["owner", "manager"] as const;
 
 export function canManageOrg(role: Profile["role"]): boolean {
   return (ADMIN_ROLES as readonly string[]).includes(role);
+}
+
+/**
+ * Platform admin — the TrustOps operator (you), distinct from a tenant's
+ * "owner" role. Identified by email via PLATFORM_ADMIN_EMAILS (comma-separated).
+ * This is the only gate on the cross-tenant /admin area and support inbox.
+ */
+const PLATFORM_ADMIN_EMAILS = (process.env.PLATFORM_ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+export function isPlatformAdmin(email: string | null | undefined): boolean {
+  if (!email || PLATFORM_ADMIN_EMAILS.length === 0) return false;
+  return PLATFORM_ADMIN_EMAILS.includes(email.toLowerCase());
+}
+
+/**
+ * Require the platform admin, or 404. Uses notFound() (not redirect) so the
+ * area's existence isn't revealed to anyone who isn't the operator.
+ */
+export async function requirePlatformAdmin(): Promise<SessionContext> {
+  const ctx = await getSessionContext();
+  if (!ctx || !isPlatformAdmin(ctx.email)) notFound();
+  return ctx;
 }

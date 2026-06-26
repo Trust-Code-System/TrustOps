@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
+import { Markdown } from "@/components/ui/markdown";
 import { cn } from "@/lib/utils";
 import type { AiSource } from "@/modules/shared/types";
 
@@ -210,7 +211,7 @@ export function AssistantClient({
       </aside>
 
       {/* Chat */}
-      <div className="mx-auto flex min-h-[calc(100vh-12rem)] min-w-0 max-w-3xl flex-1 flex-col">
+      <div className="mx-auto flex min-h-[calc(100vh-7rem)] min-w-0 max-w-3xl flex-1 flex-col">
         {!configured && (
           <Alert className="mb-4">
             The assistant isn&apos;t configured yet. Add an API key to enable it.
@@ -227,8 +228,8 @@ export function AssistantClient({
             <div className="pt-6">
               {/* Centered welcome */}
               <div className="flex flex-col items-center text-center">
-                <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-600 text-text-on-primary shadow-sm">
-                  <Bot className="h-8 w-8" aria-hidden="true" />
+                <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-600 text-text-on-primary shadow-sm ring-4 ring-primary-100">
+                  <AiSparkle className="h-9 w-9" />
                 </span>
                 <h1 className="text-h1 text-text-primary">{greeting()}</h1>
                 <p className="mt-2 max-w-md text-body text-text-secondary">
@@ -290,7 +291,11 @@ export function AssistantClient({
                       : "rounded-2xl rounded-tl-sm border border-border-subtle bg-surface-card text-text-primary",
                   )}
                 >
+                  {isUser ? (
                   <p className="whitespace-pre-wrap">{m.content}</p>
+                ) : (
+                  <Markdown>{m.content}</Markdown>
+                )}
                   {m.role === "assistant" && m.sources && m.sources.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2 border-t border-border-subtle pt-2">
                       {m.sources.map((s, j) => (
@@ -354,13 +359,30 @@ export function AssistantClient({
               <Send className="h-[18px] w-[18px]" aria-hidden="true" />
             </button>
           </form>
-          <p className="mt-2 text-center text-caption text-text-muted">
-            Powered by Claude · Answers come from your own data and may not be
-            perfect.
-          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Generative-AI sparkle glyph — a large four-point star flanked by two smaller
+ * ones. Reads as "intelligent assistant" far better than a literal robot, and
+ * echoes the Sparkles used in the thinking indicator. Inherits currentColor.
+ */
+function AiSparkle({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      role="img"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M11.5 3 9.4 8.4 4 10.5l5.4 2.1L11.5 18l2.1-5.4L19 10.5l-5.4-2.1L11.5 3Z" />
+      <path d="M18.5 2.5 17.6 4.9 15.2 5.8l2.4.9.9 2.4.9-2.4 2.4-.9-2.4-.9-.9-2.4Z" />
+      <path d="M18 14.5 17.3 16.3 15.5 17l1.8.7.7 1.8.7-1.8 1.8-.7-1.8-.7-.7-1.8Z" />
+    </svg>
   );
 }
 

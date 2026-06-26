@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Money } from "@/components/ui/money";
 import { cn } from "@/lib/utils";
 import { getReportData, normalizeRange } from "@/modules/analytics/queries";
@@ -127,13 +127,13 @@ export default async function ReportsPage({
           <span className="text-caption font-[500] uppercase tracking-[0.04em] text-text-muted">
             From
           </span>
-          <Input type="date" name="from" defaultValue={data.range.from} />
+          <DatePicker name="from" defaultValue={data.range.from} aria-label="From" />
         </label>
         <label className="space-y-1">
           <span className="text-caption font-[500] uppercase tracking-[0.04em] text-text-muted">
             To
           </span>
-          <Input type="date" name="to" defaultValue={data.range.to} />
+          <DatePicker name="to" defaultValue={data.range.to} aria-label="To" />
         </label>
         <Button type="submit">Apply range</Button>
       </form>

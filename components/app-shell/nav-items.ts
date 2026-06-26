@@ -9,6 +9,8 @@ import {
   WalletCards,
   FileDown,
   Sparkles,
+  LifeBuoy,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -57,4 +59,12 @@ export const MORE_ITEMS: NavItem[] = [
   { label: "Reports", href: "/reports", icon: FileDown },
   { label: "Assistant", href: "/assistant", icon: Sparkles },
   { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Help Center", href: "/help", icon: LifeBuoy },
 ];
+
+/** Mobile "More" entry shown only to the platform admin (see isPlatformAdmin). */
+export const ADMIN_ITEM: NavItem = {
+  label: "Admin",
+  href: "/admin",
+  icon: ShieldCheck,
+};

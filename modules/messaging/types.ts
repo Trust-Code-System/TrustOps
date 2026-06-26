@@ -7,6 +7,21 @@ export interface OutboundMessage {
   body: string;
   companyId: string;
   template: string;
+  /**
+   * WhatsApp business-initiated send. Meta only delivers a free-form text
+   * message inside an open 24h customer-service window; to message a number
+   * cold (e.g. alerting the operator) you must use a pre-approved template.
+   * When present and credentials are set, the WhatsApp adapter sends this
+   * template instead of `body`. Ignored by other channels.
+   */
+  whatsappTemplate?: {
+    /** Approved template name in the Meta WhatsApp Manager. */
+    name: string;
+    /** Meta language code, e.g. "en" or "en_US". */
+    language: string;
+    /** Ordered body parameters that fill the template's {{1}}, {{2}}, … */
+    bodyParams?: string[];
+  };
 }
 
 export interface SendResult {

@@ -130,6 +130,43 @@
     font-feature-settings: "tnum";
   }
 
+  /* Brand scrollbar — replaces the native OS bar with the app palette.
+     Firefox uses the standard properties; WebKit/Blink use the pseudo-els. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-400) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-400);
+    border-radius: var(--radius-full);
+    /* inset the thumb so it reads as a slim pill, not edge-to-edge */
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-primary-400);
+  }
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-primary-600);
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Tint native form controls (incl. the date picker) to the brand, and keep
+     the OS picker in light mode to match the light-only design system. */
+  :root {
+    color-scheme: light;
+    accent-color: var(--color-primary-600);
+  }
+
   /* Always-visible keyboard focus ring. */
   :focus-visible {
     outline: 2px solid var(--border-focus);
