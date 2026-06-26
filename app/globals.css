@@ -67,8 +67,9 @@
   --border-focus: var(--color-primary-500);
 
   /* Type */
-  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+  --font-sans: var(--font-jakarta), system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
   --font-numeric: var(--font-inter), sans-serif;
 
   /* Spacing — 4px grid */

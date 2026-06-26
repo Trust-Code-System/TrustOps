@@ -97,7 +97,7 @@ function Nav() {
     >
       <div className="mx-auto flex max-w-content items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" aria-label="TrustOps AI home">
-          <Logo label="TrustOps AI" size={30} wordmarkClassName="text-white text-h2" />
+          <Logo label="TrustOps AI" size={30} wordmarkClassName="text-white text-[19px] leading-none" />
         </Link>
         <div className="hidden items-center gap-8 md:flex">
           {["Solutions", "AI Assistant", "Analytics", "Pricing"].map((item) => (
@@ -180,16 +180,16 @@ function Hero() {
               variants={reveal}
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-caption font-[600] uppercase tracking-[0.12em] text-white/90 backdrop-blur"
             >
-              <ShieldCheck className="h-4 w-4 text-fuchsia-300" />
+              <ShieldCheck className="h-4 w-4 text-fuchsia-300" strokeWidth={1.75} />
               Business Operating System
             </motion.span>
             <motion.h1
               variants={reveal}
-              className="mt-6 text-[44px] font-[800] leading-[1.05] tracking-[-0.03em] text-white sm:text-[64px]"
+              className="mt-6 font-display text-[46px] font-[600] leading-[1.04] tracking-[-0.02em] text-white sm:text-[66px]"
             >
               We make your
               <br />
-              business <span className={TEXT_GRADIENT}>unstoppable</span>
+              business <span className={`${TEXT_GRADIENT} italic`}>unstoppable</span>
             </motion.h1>
             <motion.p
               variants={reveal}
@@ -204,7 +204,7 @@ function Hero() {
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-[15px] font-[700] text-[#0a0712] shadow-[0_0_40px_-6px_rgba(168,85,247,0.7)] transition-transform hover:-translate-y-0.5"
               >
                 Get Started for Free
-                <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
+                <ArrowRight className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
               </Link>
               <Link
                 href="/login"
@@ -315,7 +315,7 @@ function HeroPreview({
         className="absolute -bottom-6 -left-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-2xl backdrop-blur-xl sm:-left-8"
       >
         <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${BRAND_GRADIENT} text-white shadow-lg`}>
-          <TrendingUp className="h-5 w-5" />
+          <TrendingUp className="h-5 w-5" strokeWidth={1.75} />
         </span>
         <div>
           <p className="text-caption uppercase tracking-[0.04em] text-white/50">Today</p>
@@ -357,7 +357,7 @@ const BENTO = {
 function GradientIcon({ icon: Icon }: { icon: typeof Package }) {
   return (
     <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${BRAND_GRADIENT} text-white shadow-[0_8px_24px_-6px_rgba(168,85,247,0.7)]`}>
-      <Icon className="h-6 w-6" aria-hidden="true" />
+      <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
     </span>
   );
 }
@@ -387,8 +387,8 @@ function Features() {
 
       <div className="relative mx-auto max-w-content px-4 sm:px-6">
         <Reveal className="mx-auto mb-16 max-w-2xl text-center">
-          <h2 className="text-metric tracking-[-0.02em] text-white sm:text-[40px]">
-            Powerful tools, <span className={TEXT_GRADIENT}>simply designed</span>
+          <h2 className="font-display text-metric font-[600] tracking-[-0.02em] text-white sm:text-[42px]">
+            Powerful tools, <span className={`${TEXT_GRADIENT} italic`}>simply designed</span>
           </h2>
           <p className="mt-4 text-body text-white/55">
             Everything you need to manage your operations without the cognitive
@@ -438,7 +438,7 @@ function Features() {
               className={`relative mt-8 flex w-full items-center justify-center gap-2 rounded-full ${BRAND_GRADIENT} px-4 py-3 text-[15px] font-[700] text-white shadow-[0_8px_24px_-6px_rgba(168,85,247,0.7)] transition-transform hover:-translate-y-0.5`}
             >
               Record Sale
-              <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
+              <ArrowRight className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
             </Link>
           </motion.div>
 
@@ -499,8 +499,15 @@ function Features() {
 /* Trust                                                               */
 /* ------------------------------------------------------------------ */
 
+const INDUSTRIES = [
+  { icon: Store, label: "Retail" },
+  { icon: Truck, label: "Logistics" },
+  { icon: UtensilsCrossed, label: "Food & Bev" },
+  { icon: Dumbbell, label: "Fitness" },
+  { icon: ShoppingBag, label: "Commerce" },
+];
+
 function Trust() {
-  const icons = [Store, Truck, UtensilsCrossed, Dumbbell, ShoppingBag];
   return (
     <section className="bg-[#0a0712] py-20">
       <div className="mx-auto max-w-content px-4 text-center sm:px-6">
@@ -508,13 +515,21 @@ function Trust() {
           <p className="mb-8 text-caption uppercase tracking-[0.1em] text-white/40">
             Trusted by 10,000+ businesses across Nigeria and beyond
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-12 text-white/25">
-            {icons.map((Icon, i) => (
-              <Icon
-                key={i}
-                className="h-9 w-9 transition-colors hover:text-fuchsia-300/70"
-                aria-hidden="true"
-              />
+          {/* Labeled glass chips — icon + name reads clearer and more
+              professional than bare floating glyphs. */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            {INDUSTRIES.map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+              >
+                <Icon
+                  className="h-[18px] w-[18px] text-fuchsia-300/90"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
+                <span className="text-small font-[600] text-white/75">{label}</span>
+              </span>
             ))}
           </div>
         </Reveal>
@@ -544,7 +559,7 @@ function FinalCta() {
             aria-hidden="true"
           />
           <div className="relative mx-auto max-w-2xl">
-            <h2 className="text-metric-lg tracking-[-0.02em] text-white sm:text-[44px]">
+            <h2 className="font-display text-metric-lg font-[600] tracking-[-0.02em] text-white sm:text-[46px]">
               Join the future of SME operations.
             </h2>
             <p className="mt-5 text-[17px] leading-[28px] text-white/85">
@@ -555,7 +570,7 @@ function FinalCta() {
               className="mt-10 inline-flex items-center gap-2 rounded-full bg-white px-10 py-4 text-[15px] font-[700] text-[#0a0712] shadow-xl transition-transform hover:-translate-y-0.5"
             >
               Build Your Business Today
-              <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
+              <ArrowRight className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -580,7 +595,7 @@ function Footer() {
         <div>
           <span className="flex items-center gap-2">
             <LogoMark size={28} />
-            <span className="text-h3 font-[700] text-white">TrustOps AI</span>
+            <span className="font-display text-[19px] font-[600] text-white">TrustOps AI</span>
           </span>
           <p className="mt-4 max-w-xs text-small text-white/40">
             © {new Date().getFullYear()} TrustOps AI. Empowering African SMEs.
