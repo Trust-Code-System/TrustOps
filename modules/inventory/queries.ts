@@ -61,6 +61,27 @@ export async function listProducts(
   return filter.lowStock ? mapped.filter((p) => p.isLowStock) : mapped;
 }
 
+export type InventoryMetrics = {
+  /** Retail value of stock on hand: Σ(sell_price × quantity), in kobo. */
+  totalValue: number;
+  /** Number of products at/below a tracked threshold in any branch. */
+  lowStockCount: number;
+  categoryCount: number;
+};
+
+/** Headline inventory stats over ALL products (independent of table filters). */
+export async function getInventoryMetrics(): Promise<InventoryMetrics> {
+  const [products, categories] = await Promise.all([
+    listProducts({}),
+    listCategories(),
+  ]);
+  return {
+    totalValue: products.reduce((s, p) => s + p.sell_price * p.totalStock, 0),
+    lowStockCount: products.filter((p) => p.isLowStock).length,
+    categoryCount: categories.length,
+  };
+}
+
 /** Distinct categories for the filter dropdown. */
 export async function listCategories(): Promise<string[]> {
   const supabase = createClient();

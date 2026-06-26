@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireSession, canManageOrg } from "@/modules/auth/session";
-import { listProducts, listCategories } from "@/modules/inventory/queries";
+import {
+  listProducts,
+  listCategories,
+  getInventoryMetrics,
+} from "@/modules/inventory/queries";
 import type { Branch } from "@/modules/shared/types";
 import { ProductsClient } from "./products-client";
 
@@ -21,7 +25,7 @@ export default async function ProductsPage({
   };
 
   const supabase = createClient();
-  const [products, categories, { data: branches }] = await Promise.all([
+  const [products, categories, metrics, { data: branches }] = await Promise.all([
     listProducts({
       search: filters.q,
       category: filters.category || undefined,
@@ -29,6 +33,7 @@ export default async function ProductsPage({
       lowStock: filters.lowStock,
     }),
     listCategories(),
+    getInventoryMetrics(),
     supabase
       .from("branches")
       .select("*")
@@ -40,6 +45,7 @@ export default async function ProductsPage({
     <ProductsClient
       products={products}
       categories={categories}
+      metrics={metrics}
       branches={(branches as Branch[] | null) ?? []}
       canManage={canManageOrg(profile.role)}
       filters={filters}

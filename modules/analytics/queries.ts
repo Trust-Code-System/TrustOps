@@ -478,6 +478,49 @@ export async function listExpenses(opts: {
   };
 }
 
+export type ExpenseMetrics = {
+  /** Sum of expenses in the last 30 days (kobo). */
+  total30d: number;
+  /** Number of expense entries in the last 30 days. */
+  count30d: number;
+  /** Highest-spend category in the window, with its share of the total. */
+  largestCategory: { name: string; amount: number; share: number } | null;
+};
+
+/** Headline expense stats over the trailing 30 days, for the Expenses screen. */
+export async function getExpenseMetrics(): Promise<ExpenseMetrics> {
+  const supabase = createClient();
+  const to = lagosDateString();
+  const from = addDays(to, -29);
+
+  const { data } = await supabase
+    .from("expenses")
+    .select("amount, category")
+    .is("deleted_at", null)
+    .gte("spent_at", `${from}T00:00:00+01:00`)
+    .lt("spent_at", `${addDays(to, 1)}T00:00:00+01:00`);
+
+  const rows = (data as { amount: number; category: string }[] | null) ?? [];
+  const total30d = rows.reduce((s, r) => s + r.amount, 0);
+
+  const byCategory = new Map<string, number>();
+  for (const r of rows) {
+    byCategory.set(r.category, (byCategory.get(r.category) ?? 0) + r.amount);
+  }
+  let largestCategory: ExpenseMetrics["largestCategory"] = null;
+  for (const [name, amount] of byCategory) {
+    if (!largestCategory || amount > largestCategory.amount) {
+      largestCategory = {
+        name,
+        amount,
+        share: total30d > 0 ? Math.round((amount / total30d) * 100) : 0,
+      };
+    }
+  }
+
+  return { total30d, count30d: rows.length, largestCategory };
+}
+
 export async function listExpenseCategories(): Promise<string[]> {
   const supabase = createClient();
   const { data } = await supabase

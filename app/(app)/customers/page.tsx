@@ -1,5 +1,5 @@
 import { requireSession } from "@/modules/auth/session";
-import { listCustomers } from "@/modules/customers/queries";
+import { listCustomersWithStats } from "@/modules/customers/queries";
 import { CustomersClient } from "./customers-client";
 
 export default async function CustomersPage({
@@ -9,7 +9,7 @@ export default async function CustomersPage({
 }) {
   await requireSession();
   const query = searchParams.q ?? "";
-  const customers = await listCustomers(query);
+  const { rows, metrics } = await listCustomersWithStats(query);
 
-  return <CustomersClient customers={customers} query={query} />;
+  return <CustomersClient customers={rows} metrics={metrics} query={query} />;
 }

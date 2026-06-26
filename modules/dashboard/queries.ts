@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { InvoiceWithCustomer } from "@/modules/invoices/queries";
 import { listLowStock, type LowStockItem } from "@/modules/inventory/queries";
 
+export type RevenueTrendPoint = { label: string; amount: number; isToday: boolean };
+
 export type DashboardData = {
   todayRevenue: number;
   revenueDelta: { direction: "up" | "down"; text: string } | null;
@@ -12,7 +14,11 @@ export type DashboardData = {
   recentSales: InvoiceWithCustomer[];
   hasAnySales: boolean;
   lowStock: LowStockItem[];
+  /** Last 7 days of revenue (payments received), oldest → today, for the trend chart. */
+  revenueTrend: RevenueTrendPoint[];
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Start-of-day ISO timestamps in Africa/Lagos (WAT, UTC+1, no DST). */
 function lagosDayBounds() {
@@ -24,29 +30,62 @@ function lagosDayBounds() {
   });
   const todayStr = dateInLagos.format(new Date());
   const todayStart = new Date(`${todayStr}T00:00:00+01:00`);
-  const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+  const yesterdayStart = new Date(todayStart.getTime() - DAY_MS);
+  // Start of the 7-day window (today + the 6 preceding days).
+  const weekStart = new Date(todayStart.getTime() - 6 * DAY_MS);
   return {
-    todayStart: todayStart.toISOString(),
-    yesterdayStart: yesterdayStart.toISOString(),
+    todayStart,
+    yesterdayStart,
+    weekStart,
   };
+}
+
+/** Bucket payments into the last 7 Lagos-days, labelled by weekday. */
+function buildRevenueTrend(
+  payments: { amount: number; paid_at: string }[],
+  todayStart: Date,
+): RevenueTrendPoint[] {
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Africa/Lagos",
+    weekday: "short",
+  });
+  const points: RevenueTrendPoint[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const dayStart = new Date(todayStart.getTime() - i * DAY_MS);
+    const dayEnd = new Date(dayStart.getTime() + DAY_MS);
+    const amount = payments.reduce((sum, p) => {
+      const t = new Date(p.paid_at).getTime();
+      return t >= dayStart.getTime() && t < dayEnd.getTime() ? sum + p.amount : sum;
+    }, 0);
+    points.push({ label: weekday.format(dayStart), amount, isToday: i === 0 });
+  }
+  return points;
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = createClient();
-  const { todayStart, yesterdayStart } = lagosDayBounds();
+  const { todayStart, yesterdayStart, weekStart } = lagosDayBounds();
+  const todayStartIso = todayStart.toISOString();
+  const yesterdayStartIso = yesterdayStart.toISOString();
 
-  // Revenue = payments received. Pull the last two days for today + the delta.
+  // Revenue = payments received. Pull the last 7 days for the trend chart, and
+  // derive today + yesterday (for the delta) from the same rows.
   const { data: recentPayments } = await supabase
     .from("payments")
     .select("amount, paid_at")
-    .gte("paid_at", yesterdayStart);
+    .gte("paid_at", weekStart.toISOString());
+
+  const weekPayments =
+    (recentPayments as { amount: number; paid_at: string }[] | null) ?? [];
 
   let todayRevenue = 0;
   let yesterdayRevenue = 0;
-  for (const p of (recentPayments as { amount: number; paid_at: string }[] | null) ?? []) {
-    if (p.paid_at >= todayStart) todayRevenue += p.amount;
-    else yesterdayRevenue += p.amount;
+  for (const p of weekPayments) {
+    if (p.paid_at >= todayStartIso) todayRevenue += p.amount;
+    else if (p.paid_at >= yesterdayStartIso) yesterdayRevenue += p.amount;
   }
+
+  const revenueTrend = buildRevenueTrend(weekPayments, todayStart);
 
   // Outstanding (unpaid total) = billed − paid over live, not-fully-paid invoices.
   const { data: openInvoices } = await supabase
@@ -106,5 +145,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     recentSales,
     hasAnySales: recentSales.length > 0,
     lowStock,
+    revenueTrend,
   };
 }

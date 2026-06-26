@@ -1,110 +1,58 @@
 import Link from "next/link";
 import {
-  ReceiptText,
-  Users,
   Package,
-  WalletCards,
-  BarChart3,
+  ScanLine,
   Sparkles,
-  ShieldCheck,
-  Building2,
-  Smartphone,
+  LineChart,
   ArrowRight,
-  Check,
+  Plus,
+  TrendingUp,
+  Store,
+  Truck,
+  UtensilsCrossed,
+  Dumbbell,
+  ShoppingBag,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 
 /**
  * Public marketing landing page (route "/"). Outside the (app) and (auth) route
  * groups, so it renders on the bare root layout — no app shell, no auth gate.
- * Static and server-rendered; the only interactions are links. Visual language
- * mirrors the app design system (indigo brand, token type scale, soft shadows).
+ * Static and server-rendered; the only interactions are links.
+ *
+ * Layout mirrors the "TrustOps AI" Stitch design (Kinetic Ledger): a two-column
+ * hero with a floating revenue chip, a bento feature grid, a trusted-by strip,
+ * a final CTA, and a dark footer. All hex flows through the app design tokens.
  */
-
-const FEATURES = [
-  {
-    icon: ReceiptText,
-    title: "Sales & invoicing",
-    body: "Record a sale in seconds and turn it into a clean, professional invoice automatically.",
-  },
-  {
-    icon: Users,
-    title: "Customers",
-    body: "Keep every customer's history, contact details, and outstanding balance in one place.",
-  },
-  {
-    icon: Package,
-    title: "Inventory & stock",
-    body: "Track products across branches with automatic low-stock alerts before you run out.",
-  },
-  {
-    icon: WalletCards,
-    title: "Expenses",
-    body: "Log business spending by category and see exactly where your money goes.",
-  },
-  {
-    icon: BarChart3,
-    title: "Analytics & reports",
-    body: "Revenue, profit, and cash flow at a glance — export a period report whenever you need it.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI assistant",
-    body: "Ask about your business in plain language and get answers grounded in your own data.",
-  },
-] as const;
-
-const STEPS = [
-  {
-    n: "1",
-    title: "Create your company",
-    body: "Sign up in under a minute. Your data is private to your business from the first click.",
-  },
-  {
-    n: "2",
-    title: "Add products & customers",
-    body: "Set up what you sell and who you sell to — or just start recording sales right away.",
-  },
-  {
-    n: "3",
-    title: "Run your day",
-    body: "Record sales, send invoices, watch stock, and let the assistant surface what matters.",
-  },
-] as const;
-
-const TRUST = [
-  {
-    icon: ShieldCheck,
-    title: "Your data is isolated",
-    body: "Every company is fully separated at the database level — your records are never visible to anyone else.",
-  },
-  {
-    icon: Building2,
-    title: "Multi-branch ready",
-    body: "Manage stock and sales across multiple branches from a single account.",
-  },
-  {
-    icon: Smartphone,
-    title: "Works on any device",
-    body: "A fast, responsive interface built for the phone in your pocket and the desktop on your counter.",
-  },
-] as const;
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-card/85 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border-subtle bg-surface-card/80 shadow-xs backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-content items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="text-h2 font-[700] text-primary-600">
-          TrustOps
+        <Link href="/" className="text-h2 font-[700] text-primary-700">
+          TrustOps AI
         </Link>
-        <nav className="flex items-center gap-2 sm:gap-3" aria-label="Primary">
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+          {["Solutions", "AI Assistant", "Analytics", "Pricing", "Resources"].map(
+            (item) => (
+              <a
+                key={item}
+                href="#features"
+                className="rounded-md px-3 py-2 text-body text-text-secondary transition-colors hover:bg-gray-100 hover:text-primary-700"
+              >
+                {item}
+              </a>
+            ),
+          )}
+        </nav>
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link href="/login" className={buttonVariants({ variant: "ghost" })}>
             Log in
           </Link>
           <Link href="/signup" className={buttonVariants()}>
-            Create a company
+            Get Started
           </Link>
-        </nav>
+        </div>
       </div>
     </header>
   );
@@ -112,42 +60,43 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-primary-50 to-surface-page">
-      <div className="mx-auto max-w-content px-4 py-16 sm:px-6 sm:py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-surface-card px-3 py-1 text-caption text-primary-700">
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
-            The operating system for African SMEs
-          </span>
-          <h1 className="mt-5 text-display-lg text-text-primary sm:text-[44px] sm:leading-[50px]">
-            Run your whole business in one place.
+    <section className="relative overflow-hidden">
+      {/* Soft radial brand wash, mirrors Stitch .hero-bg */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 20% 45%, rgba(53,68,168,0.14) 0%, rgba(248,249,250,0) 60%)",
+        }}
+        aria-hidden="true"
+      />
+      <div className="relative mx-auto grid max-w-content grid-cols-1 items-center gap-12 px-4 pb-24 pt-16 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:pt-24">
+        <div>
+          <h1 className="text-metric-lg tracking-[-0.02em] text-primary-700 sm:text-[48px] sm:leading-[54px]">
+            The Operating System for African SMEs
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-body text-text-secondary sm:text-[17px] sm:leading-[28px]">
-            Record sales, send invoices, track stock, manage customers, and get
-            AI-powered insights — all from one simple app built for small and
-            growing businesses.
+          <p className="mt-6 max-w-xl text-[17px] leading-[28px] text-text-secondary">
+            All-in-one business management for modern entrepreneurs. Handle
+            inventory, sales, and analytics with banking-grade security and
+            AI-powered insights.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Link
               href="/signup"
-              className={buttonVariants({ size: "lg" }) + " w-full sm:w-auto"}
+              className={buttonVariants({ size: "lg" }) + " px-8"}
             >
-              Create a company
+              Get Started for Free
               <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
             </Link>
             <Link
               href="/login"
               className={
-                buttonVariants({ variant: "secondary", size: "lg" }) +
-                " w-full sm:w-auto"
+                buttonVariants({ variant: "secondary", size: "lg" }) + " px-8"
               }
             >
-              Log in
+              Book a Demo
             </Link>
           </div>
-          <p className="mt-4 text-small text-text-muted">
-            Free to start · No card required
-          </p>
         </div>
 
         <HeroPreview />
@@ -156,110 +105,209 @@ function Hero() {
   );
 }
 
-/** A static, decorative mock of the app dashboard to anchor the hero. */
+/** In-app dashboard mock anchoring the hero, with a floating revenue chip. */
 function HeroPreview() {
+  const bars = [40, 65, 45, 80, 55, 35, 95];
   return (
-    <div className="mx-auto mt-14 max-w-4xl" aria-hidden="true">
-      <div className="rounded-lg border border-border-subtle bg-surface-card p-3 shadow-lg sm:p-4">
-        <div className="mb-3 flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-gray-200" />
-          <span className="h-3 w-3 rounded-full bg-gray-200" />
-          <span className="h-3 w-3 rounded-full bg-gray-200" />
+    <div className="relative" aria-hidden="true">
+      <div className="rounded-lg border border-border-subtle bg-surface-card p-5 shadow-lg">
+        <div className="flex items-center justify-between">
+          <p className="text-body-strong text-text-primary">Revenue Trend</p>
+          <span className="text-small text-text-muted">This Week</span>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="mt-5 flex h-44 items-end justify-between gap-2">
+          {bars.map((h, i) => (
+            <div
+              key={i}
+              className={
+                "w-full rounded-t-sm " +
+                (i === bars.length - 1 ? "bg-primary-600" : "bg-primary-200")
+              }
+              style={{ height: `${h}%` }}
+            />
+          ))}
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3">
           {[
-            { label: "Today's revenue", value: "₦184,500", tone: "text-success-700" },
-            { label: "Unpaid total", value: "₦42,000", tone: "text-text-primary" },
-            { label: "Customers", value: "128", tone: "text-text-primary" },
+            { label: "Unpaid", value: "₦850,000" },
+            { label: "Customers", value: "1,204" },
           ].map((m) => (
             <div
               key={m.label}
               className="rounded-md border border-border-subtle bg-surface-page p-4"
             >
-              <p className="text-caption text-text-muted">{m.label}</p>
-              <p className={`mt-1 text-metric tabular ${m.tone}`}>{m.value}</p>
+              <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
+                {m.label}
+              </p>
+              <p className="mt-1 text-h2 tabular text-text-primary">{m.value}</p>
             </div>
           ))}
         </div>
-        <div className="mt-3 rounded-md border border-border-subtle bg-surface-page p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-body-strong text-text-primary">Recent sales</p>
-            <span className="text-small text-primary-600">View all</span>
-          </div>
-          <div className="mt-3 space-y-2">
-            {["INV-1042 · Ada Stores", "INV-1041 · Musa Traders", "INV-1040 · Bright Mart"].map(
-              (row, i) => (
-                <div
-                  key={row}
-                  className="flex items-center justify-between rounded-sm bg-surface-card px-3 py-2"
-                >
-                  <span className="text-small text-text-secondary">{row}</span>
-                  <span className="text-small tabular text-text-primary">
-                    {["₦24,000", "₦9,500", "₦57,200"][i]}
-                  </span>
-                </div>
-              ),
-            )}
-          </div>
+      </div>
+
+      {/* Floating revenue chip */}
+      <div className="absolute -bottom-6 -left-4 flex items-center gap-4 rounded-lg border border-border-subtle bg-surface-card p-5 shadow-lg sm:-left-6">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success-50 text-success-700">
+          <TrendingUp className="h-6 w-6" />
+        </span>
+        <div>
+          <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
+            Today&apos;s Revenue
+          </p>
+          <p className="text-metric tabular text-text-primary">₦450,000</p>
         </div>
       </div>
     </div>
   );
 }
 
-function Features() {
+const BENTO = {
+  inventory: {
+    icon: Package,
+    title: "Smart Inventory",
+    body: "Real-time tracking and low-stock alerts keep your shelves stocked and customers happy.",
+  },
+  sales: {
+    icon: ScanLine,
+    title: "Atomic Sales",
+    body: "Record transactions in seconds with professional invoices.",
+  },
+  ai: {
+    icon: Sparkles,
+    title: "AI Assistant",
+    body: "Your business data, decoded. Powered by Claude.",
+  },
+  analytics: {
+    icon: LineChart,
+    title: "Global Analytics",
+    body: "Real-time reporting and revenue trends across all your locations.",
+  },
+} as const;
+
+function BentoIcon({
+  icon: Icon,
+  tone,
+}: {
+  icon: typeof Package;
+  tone: "primary" | "success" | "warning";
+}) {
+  const toneClass = {
+    primary: "bg-primary-50 text-primary-600",
+    success: "bg-success-50 text-success-700",
+    warning: "bg-warning-50 text-warning-700",
+  }[tone];
   return (
-    <section className="mx-auto max-w-content px-4 py-16 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-display text-text-primary">
-          Everything your business needs
-        </h2>
-        <p className="mt-3 text-body text-text-secondary">
-          One connected toolkit instead of scattered notebooks, spreadsheets,
-          and chat threads.
-        </p>
-      </div>
-      <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((f) => {
-          const Icon = f.icon;
-          return (
-            <div
-              key={f.title}
-              className="rounded-lg border border-border-subtle bg-surface-card p-6 shadow-sm transition-shadow duration-base ease-out hover:shadow-md"
-            >
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-primary-50 text-primary-600">
-                <Icon className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <h3 className="mt-4 text-h3 text-text-primary">{f.title}</h3>
-              <p className="mt-1.5 text-body text-text-secondary">{f.body}</p>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+    <span
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-md ${toneClass}`}
+    >
+      <Icon className="h-6 w-6" aria-hidden="true" />
+    </span>
   );
 }
 
-function HowItWorks() {
+function Features() {
   return (
-    <section className="border-y border-border-subtle bg-surface-card">
-      <div className="mx-auto max-w-content px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-display text-text-primary">Up and running today</h2>
-          <p className="mt-3 text-body text-text-secondary">
-            No setup project, no consultants. Three steps and you&apos;re live.
+    <section id="features" className="bg-gray-100 py-24">
+      <div className="mx-auto max-w-content px-4 sm:px-6">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <h2 className="text-metric tracking-[-0.02em] text-text-primary">
+            Powerful tools, simply designed.
+          </h2>
+          <p className="mt-4 text-body text-text-secondary">
+            Everything you need to manage your operations without the cognitive
+            overload.
           </p>
         </div>
-        <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
-          {STEPS.map((s) => (
-            <div key={s.n}>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary-600 text-h3 text-text-on-primary">
-                {s.n}
-              </span>
-              <h3 className="mt-4 text-h3 text-text-primary">{s.title}</h3>
-              <p className="mt-1.5 text-body text-text-secondary">{s.body}</p>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Smart Inventory — wide */}
+          <div className="flex flex-col justify-between rounded-lg border border-border-subtle bg-surface-card p-8 shadow-sm md:col-span-2">
+            <div className="mb-8">
+              <BentoIcon icon={BENTO.inventory.icon} tone="primary" />
+              <h3 className="mt-4 text-h3 text-text-primary">
+                {BENTO.inventory.title}
+              </h3>
+              <p className="mt-2 text-body text-text-secondary">
+                {BENTO.inventory.body}
+              </p>
             </div>
-          ))}
+            <div className="mt-auto flex h-48 items-end justify-between gap-2 rounded-md border border-border-subtle bg-surface-page p-4">
+              {[35, 55, 42, 68, 50, 75, 60, 88].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-full rounded-t-sm bg-primary-300"
+                  style={{ height: `${h}%` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Atomic Sales */}
+          <div className="flex flex-col justify-between rounded-lg border border-border-subtle bg-surface-card p-8 shadow-sm">
+            <div>
+              <BentoIcon icon={BENTO.sales.icon} tone="success" />
+              <h3 className="mt-4 text-h3 text-text-primary">
+                {BENTO.sales.title}
+              </h3>
+              <p className="mt-2 text-body text-text-secondary">
+                {BENTO.sales.body}
+              </p>
+            </div>
+            <div className="mt-8">
+              <Link
+                href="/signup"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-3 text-[15px] font-[600] text-text-on-primary shadow-md transition-colors hover:bg-primary-700"
+              >
+                <Plus className="h-[18px] w-[18px]" aria-hidden="true" />
+                Record Sale
+              </Link>
+            </div>
+          </div>
+
+          {/* AI Assistant */}
+          <div className="flex flex-col justify-between rounded-lg border border-border-subtle bg-surface-card p-8 shadow-sm">
+            <div>
+              <BentoIcon icon={BENTO.ai.icon} tone="warning" />
+              <h3 className="mt-4 text-h3 text-text-primary">{BENTO.ai.title}</h3>
+              <p className="mt-2 text-body text-text-secondary">{BENTO.ai.body}</p>
+            </div>
+            <div className="mt-8 rounded-md border border-border-subtle bg-surface-page p-4">
+              <p className="text-small italic text-text-secondary">
+                &ldquo;Sales are up 15% this week. Consider restocking item
+                XYZ.&rdquo;
+              </p>
+            </div>
+          </div>
+
+          {/* Global Analytics — wide */}
+          <div className="flex flex-col justify-between rounded-lg border border-border-subtle bg-surface-card p-8 shadow-sm md:col-span-2">
+            <div className="mb-8">
+              <BentoIcon icon={BENTO.analytics.icon} tone="primary" />
+              <h3 className="mt-4 text-h3 text-text-primary">
+                {BENTO.analytics.title}
+              </h3>
+              <p className="mt-2 text-body text-text-secondary">
+                {BENTO.analytics.body}
+              </p>
+            </div>
+            <div className="mt-auto h-48 w-full overflow-hidden rounded-md border border-border-subtle bg-surface-page">
+              <svg
+                viewBox="0 0 400 160"
+                preserveAspectRatio="none"
+                className="h-full w-full"
+                aria-hidden="true"
+              >
+                <polyline
+                  points="0,130 60,110 120,120 180,70 240,85 300,40 360,55 400,20"
+                  fill="none"
+                  stroke="var(--color-primary-500)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -267,23 +315,18 @@ function HowItWorks() {
 }
 
 function Trust() {
+  const icons = [Store, Truck, UtensilsCrossed, Dumbbell, ShoppingBag];
   return (
-    <section className="mx-auto max-w-content px-4 py-16 sm:px-6 sm:py-20">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        {TRUST.map((t) => {
-          const Icon = t.icon;
-          return (
-            <div key={t.title} className="flex gap-4">
-              <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-success-50 text-success-700">
-                <Icon className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-h3 text-text-primary">{t.title}</h3>
-                <p className="mt-1 text-body text-text-secondary">{t.body}</p>
-              </div>
-            </div>
-          );
-        })}
+    <section className="bg-surface-page py-20">
+      <div className="mx-auto max-w-content px-4 text-center sm:px-6">
+        <p className="mb-8 text-caption uppercase tracking-[0.1em] text-text-muted">
+          Trusted by 10,000+ businesses across Nigeria and beyond
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-12 text-gray-400">
+          {icons.map((Icon, i) => (
+            <Icon key={i} className="h-9 w-9" aria-hidden="true" />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -291,63 +334,69 @@ function Trust() {
 
 function FinalCta() {
   return (
-    <section className="px-4 pb-16 sm:px-6 sm:pb-20">
-      <div className="mx-auto max-w-content overflow-hidden rounded-lg bg-primary-600 px-6 py-14 text-center sm:px-12">
-        <h2 className="text-display text-text-on-primary">
-          Start running your business the simple way
+    <section className="relative overflow-hidden py-24">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(53,68,168,0.12) 0%, rgba(248,249,250,0) 65%)",
+        }}
+        aria-hidden="true"
+      />
+      <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+        <h2 className="text-metric-lg tracking-[-0.02em] text-primary-700">
+          Join the future of SME operations.
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-body text-primary-100">
-          Create your company in under a minute and record your first sale today.
+        <p className="mt-6 text-[17px] leading-[28px] text-text-secondary">
+          Stop wrestling with spreadsheets. Start growing with TrustOps AI.
         </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            href="/signup"
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-surface-card px-6 text-[15px] font-[600] text-primary-700 transition-colors duration-fast ease-in-out hover:bg-primary-50 sm:w-auto"
-          >
-            Create a company
-            <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex h-12 w-full items-center justify-center rounded-md border border-primary-300 px-6 text-[15px] font-[600] text-text-on-primary transition-colors duration-fast ease-in-out hover:bg-primary-700 sm:w-auto"
-          >
-            Log in
-          </Link>
-        </div>
-        <ul className="mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-x-6 gap-y-2">
-          {["Free to start", "No card required", "Your data stays private"].map(
-            (item) => (
-              <li
-                key={item}
-                className="inline-flex items-center gap-1.5 text-small text-primary-100"
-              >
-                <Check className="h-4 w-4" aria-hidden="true" />
-                {item}
-              </li>
-            ),
-          )}
-        </ul>
+        <Link
+          href="/signup"
+          className={buttonVariants({ size: "lg" }) + " mt-10 px-10"}
+        >
+          Build Your Business Today
+        </Link>
       </div>
     </section>
   );
 }
 
 function Footer() {
+  const columns = [
+    { title: "Legal", links: ["Privacy Policy", "Terms of Service"] },
+    { title: "Support", links: ["Contact Support", "Documentation"] },
+    { title: "Community", links: ["Global SME Network"] },
+  ];
   return (
-    <footer className="border-t border-border-subtle bg-surface-card">
-      <div className="mx-auto flex max-w-content flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
-        <span className="text-body-strong text-primary-600">TrustOps</span>
-        <nav className="flex items-center gap-6" aria-label="Footer">
-          <Link href="/login" className="text-small text-text-secondary hover:text-text-primary">
-            Log in
-          </Link>
-          <Link href="/signup" className="text-small text-text-secondary hover:text-text-primary">
-            Create a company
-          </Link>
+    <footer className="bg-gray-900 py-12">
+      <div className="mx-auto flex max-w-content flex-col justify-between gap-8 px-4 sm:px-6 md:flex-row">
+        <div>
+          <span className="block text-h3 font-[700] text-white">TrustOps AI</span>
+          <p className="mt-4 text-small text-gray-400">
+            © {new Date().getFullYear()} TrustOps AI. Empowering African SMEs.
+          </p>
+        </div>
+        <nav
+          className="flex flex-col gap-8 md:flex-row md:gap-12"
+          aria-label="Footer"
+        >
+          {columns.map((col) => (
+            <div key={col.title} className="flex flex-col gap-3">
+              <span className="text-caption uppercase tracking-[0.05em] text-primary-300">
+                {col.title}
+              </span>
+              {col.links.map((link) => (
+                <a
+                  key={link}
+                  href="#"
+                  className="text-small text-gray-300 transition-colors hover:text-white"
+                >
+                  {link}
+                </a>
+              ))}
+            </div>
+          ))}
         </nav>
-        <p className="text-small text-text-muted">
-          © {new Date().getFullYear()} TrustOps. All rights reserved.
-        </p>
       </div>
     </footer>
   );
@@ -359,7 +408,6 @@ export default function LandingPage() {
       <Header />
       <Hero />
       <Features />
-      <HowItWorks />
       <Trust />
       <FinalCta />
       <Footer />
