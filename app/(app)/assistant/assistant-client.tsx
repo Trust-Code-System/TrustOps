@@ -3,8 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MessageSquare, Plus, Send, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Bot,
+  Plus,
+  Send,
+  Sparkles,
+  TrendingUp,
+  Package,
+  Users,
+  ReceiptText,
+  type LucideIcon,
+} from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import type { AiSource } from "@/modules/shared/types";
@@ -21,12 +30,35 @@ type ChatMessage = {
   sources?: AiSource[];
 };
 
-const SUGGESTIONS = [
-  "How much did I make this month?",
-  "Who owes me money?",
-  "What's low on stock?",
-  "Who are my top customers?",
+const SUGGESTIONS: { icon: LucideIcon; title: string; question: string }[] = [
+  {
+    icon: TrendingUp,
+    title: "Today's Performance",
+    question: "What is my revenue today compared to yesterday?",
+  },
+  {
+    icon: Package,
+    title: "Inventory Check",
+    question: "Which products are low on stock right now?",
+  },
+  {
+    icon: Users,
+    title: "Top Customers",
+    question: "Show me my top 5 customers this month.",
+  },
+  {
+    icon: ReceiptText,
+    title: "Unpaid Invoices",
+    question: "Who owes me money right now?",
+  },
 ];
+
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning.";
+  if (h < 17) return "Good afternoon.";
+  return "Good evening.";
+}
 
 export function AssistantClient({
   configured,
@@ -147,6 +179,8 @@ export function AssistantClient({
     }
   }
 
+  const isEmpty = messages.length === 0;
+
   return (
     <div className="flex gap-6">
       {/* Conversation history (desktop) */}
@@ -176,24 +210,7 @@ export function AssistantClient({
       </aside>
 
       {/* Chat */}
-      <div className="flex min-h-[calc(100vh-12rem)] min-w-0 flex-1 flex-col">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-2 text-display">
-              <Sparkles className="h-6 w-6 text-primary-600" /> Assistant
-            </h1>
-            <p className="mt-1 text-body text-text-secondary">
-              Ask about your sales, customers, stock, and money owed.
-            </p>
-          </div>
-          <Link
-            href="/assistant"
-            className="lg:hidden inline-flex items-center gap-1 text-small font-[600] text-primary-600"
-          >
-            <Plus className="h-4 w-4" /> New
-          </Link>
-        </div>
-
+      <div className="mx-auto flex min-h-[calc(100vh-12rem)] min-w-0 max-w-3xl flex-1 flex-col">
         {!configured && (
           <Alert className="mb-4">
             The assistant isn&apos;t configured yet. Add an API key to enable it.
@@ -206,72 +223,101 @@ export function AssistantClient({
         )}
 
         <div className="flex-1 space-y-4 overflow-y-auto pb-4">
-          {messages.length === 0 && (
-            <div className="rounded-lg border border-border-subtle bg-surface-card p-6">
-              <p className="text-body-strong text-text-primary">
-                Every answer is grounded in your own data.
-              </p>
-              <p className="mt-1 text-small text-text-muted">
-                Figures come from your records — the assistant never guesses. Try:
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    disabled={blocked}
-                    onClick={() => send(s)}
-                    className="rounded-full border border-border-default px-3 py-1.5 text-small text-text-secondary hover:bg-gray-50 disabled:opacity-40"
-                  >
-                    {s}
-                  </button>
-                ))}
+          {isEmpty && (
+            <div className="pt-6">
+              {/* Centered welcome */}
+              <div className="flex flex-col items-center text-center">
+                <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-600 text-text-on-primary shadow-sm">
+                  <Bot className="h-8 w-8" aria-hidden="true" />
+                </span>
+                <h1 className="text-h1 text-text-primary">{greeting()}</h1>
+                <p className="mt-2 max-w-md text-body text-text-secondary">
+                  I&apos;m your TrustOps AI assistant. I can analyze your sales,
+                  check inventory, or surface money owed. How can I help today?
+                </p>
+              </div>
+
+              {/* Suggestion grid */}
+              <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {SUGGESTIONS.map((s) => {
+                  const Icon = s.icon;
+                  return (
+                    <button
+                      key={s.title}
+                      type="button"
+                      disabled={blocked}
+                      onClick={() => send(s.question)}
+                      className="group flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-card p-4 text-left transition-all hover:border-primary-300 hover:shadow-sm disabled:opacity-40"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-100 text-text-muted transition-colors group-hover:bg-primary-50 group-hover:text-primary-600">
+                        <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+                      </span>
+                      <span>
+                        <span className="block text-body-strong text-text-primary">
+                          {s.title}
+                        </span>
+                        <span className="mt-0.5 block text-small text-text-muted">
+                          &ldquo;{s.question}&rdquo;
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {messages.map((m, i) => {
-            // The empty assistant placeholder is represented by the "Thinking…"
-            // indicator below until its first token arrives.
+            // The empty assistant placeholder shows as the "Thinking…" indicator
+            // below until its first token arrives.
             if (m.role === "assistant" && !m.content) return null;
+            const isUser = m.role === "user";
             return (
-            <div
-              key={m.id ?? i}
-              className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}
-            >
               <div
-                className={cn(
-                  "max-w-[85%] rounded-lg px-4 py-3 text-body",
-                  m.role === "user"
-                    ? "bg-primary-600 text-text-on-primary"
-                    : "border border-border-subtle bg-surface-card text-text-primary",
-                )}
+                key={m.id ?? i}
+                className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}
               >
-                <p className="whitespace-pre-wrap">{m.content}</p>
-                {m.role === "assistant" && m.sources && m.sources.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2 border-t border-border-subtle pt-2">
-                    {m.sources.map((s, j) => (
-                      <span
-                        key={j}
-                        className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-caption text-text-secondary"
-                      >
-                        <span className="text-text-muted">{s.label}:</span>
-                        <span className="tabular font-[600]">{s.value}</span>
-                      </span>
-                    ))}
-                  </div>
+                {!isUser && (
+                  <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary">
+                    <Bot className="h-[18px] w-[18px]" aria-hidden="true" />
+                  </span>
                 )}
+                <div
+                  className={cn(
+                    "max-w-[85%] px-4 py-3 text-body",
+                    isUser
+                      ? "rounded-2xl rounded-tr-sm bg-primary-600 text-text-on-primary"
+                      : "rounded-2xl rounded-tl-sm border border-border-subtle bg-surface-card text-text-primary",
+                  )}
+                >
+                  <p className="whitespace-pre-wrap">{m.content}</p>
+                  {m.role === "assistant" && m.sources && m.sources.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-border-subtle pt-2">
+                      {m.sources.map((s, j) => (
+                        <span
+                          key={j}
+                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-caption text-text-secondary"
+                        >
+                          <span className="text-text-muted">{s.label}:</span>
+                          <span className="tabular font-[600]">{s.value}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
             );
           })}
 
           {sending &&
             messages[messages.length - 1]?.role === "assistant" &&
             !messages[messages.length - 1]?.content && (
-              <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 py-3 text-small text-text-muted">
-                  <MessageSquare className="h-4 w-4 animate-pulse" /> Thinking…
+              <div className="flex justify-start gap-3">
+                <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-primary-600">
+                  <Sparkles className="h-[18px] w-[18px] animate-pulse" aria-hidden="true" />
+                </span>
+                <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm border border-border-subtle bg-surface-card px-4 py-3 text-small text-text-muted">
+                  <Dot /> <Dot delay="150ms" /> <Dot delay="300ms" />
                 </div>
               </div>
             )}
@@ -280,27 +326,50 @@ export function AssistantClient({
 
         {error && <Alert className="mb-3">{error}</Alert>}
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
-          className="flex items-end gap-2 border-t border-border-subtle pt-4"
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={blocked || sending}
-            placeholder={blocked ? "Assistant unavailable" : "Ask about your business…"}
-            className="h-11 flex-1 rounded-sm border border-border-default bg-surface-card px-3 text-body text-text-primary placeholder:text-gray-500 focus:border-border-focus focus:outline-none focus:ring-[3px] focus:ring-primary-100 disabled:bg-gray-100"
-            aria-label="Message the assistant"
-          />
-          <Button type="submit" size="lg" isLoading={sending} disabled={blocked || !input.trim()}>
-            <Send className="h-[18px] w-[18px]" />
-            <span className="sr-only">Send</span>
-          </Button>
-        </form>
+        {/* Composer */}
+        <div className="border-t border-border-subtle pt-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(input);
+            }}
+            className="flex items-center gap-2 rounded-full border border-border-default bg-surface-card py-1.5 pl-5 pr-1.5 focus-within:border-border-focus focus-within:ring-[3px] focus-within:ring-primary-100"
+          >
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={blocked || sending}
+              placeholder={
+                blocked ? "Assistant unavailable" : "Ask Claude to analyze your business data…"
+              }
+              className="h-9 flex-1 bg-transparent text-body text-text-primary placeholder:text-gray-500 focus:outline-none disabled:cursor-not-allowed"
+              aria-label="Message the assistant"
+            />
+            <button
+              type="submit"
+              disabled={blocked || !input.trim() || sending}
+              aria-label="Send message"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-text-on-primary transition-colors hover:bg-primary-700 disabled:opacity-40"
+            >
+              <Send className="h-[18px] w-[18px]" aria-hidden="true" />
+            </button>
+          </form>
+          <p className="mt-2 text-center text-caption text-text-muted">
+            Powered by Claude · Answers come from your own data and may not be
+            perfect.
+          </p>
+        </div>
       </div>
     </div>
+  );
+}
+
+/** Animated typing dot. */
+function Dot({ delay = "0ms" }: { delay?: string }) {
+  return (
+    <span
+      className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-text-muted"
+      style={{ animationDelay: delay }}
+    />
   );
 }

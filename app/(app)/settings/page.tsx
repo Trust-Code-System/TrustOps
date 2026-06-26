@@ -8,6 +8,7 @@ import { BranchesSection } from "./branches-section";
 import { StaffSection } from "./staff-section";
 import { NotificationsSection } from "./notifications-section";
 import { AiSection } from "./ai-section";
+import { SettingsLayout, type SettingsTab } from "./settings-layout";
 
 /**
  * Settings — company profile, branches, and staff. Role-gated: owners and
@@ -39,32 +40,66 @@ export default async function SettingsPage() {
     getMonthSpendUsdCents(),
   ]);
 
+  const maybeTabs: (SettingsTab | null)[] = [
+    company
+      ? {
+          id: "company",
+          label: "Company Profile",
+          content: (
+            <CompanySection company={company as Company} canManage={canManage} />
+          ),
+        }
+      : null,
+    {
+      id: "branches",
+      label: "Branches",
+      content: (
+        <BranchesSection
+          branches={(branches as Branch[] | null) ?? []}
+          canManage={canManage}
+        />
+      ),
+    },
+    {
+      id: "staff",
+      label: "Staff & Roles",
+      content: (
+        <StaffSection
+          staff={(staff as Profile[] | null) ?? []}
+          canManage={canManage}
+          currentUserId={profile.id}
+        />
+      ),
+    },
+    {
+      id: "notifications",
+      label: "Notifications",
+      content: <NotificationsSection settings={notifSettings} canManage={canManage} />,
+    },
+    {
+      id: "ai",
+      label: "AI Configuration",
+      content: (
+        <AiSection
+          settings={aiSettings}
+          monthSpendUsdCents={aiMonthSpend}
+          isOwner={profile.role === "owner"}
+        />
+      ),
+    },
+  ];
+  const tabs = maybeTabs.filter((t): t is SettingsTab => t !== null);
+
   return (
-    <div className="max-w-form space-y-6">
-      <h1 className="text-display">Settings</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-display">Settings</h1>
+        <p className="mt-1 text-body text-text-secondary">
+          Manage your company configuration and preferences.
+        </p>
+      </div>
 
-      {company && (
-        <CompanySection company={company as Company} canManage={canManage} />
-      )}
-
-      <BranchesSection
-        branches={(branches as Branch[] | null) ?? []}
-        canManage={canManage}
-      />
-
-      <StaffSection
-        staff={(staff as Profile[] | null) ?? []}
-        canManage={canManage}
-        currentUserId={profile.id}
-      />
-
-      <NotificationsSection settings={notifSettings} canManage={canManage} />
-
-      <AiSection
-        settings={aiSettings}
-        monthSpendUsdCents={aiMonthSpend}
-        isOwner={profile.role === "owner"}
-      />
+      <SettingsLayout tabs={tabs} />
     </div>
   );
 }

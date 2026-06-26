@@ -3,6 +3,7 @@ import { requireSession } from "@/modules/auth/session";
 import {
   listExpenseCategories,
   listExpenses,
+  getExpenseMetrics,
 } from "@/modules/analytics/queries";
 import type { Branch } from "@/modules/shared/types";
 import { ExpensesClient } from "./expenses-client";
@@ -24,7 +25,7 @@ export default async function ExpensesPage({
   const { profile } = await requireSession();
   const page = Number(searchParams.page ?? "1");
   const supabase = createClient();
-  const [expenses, categories, { data: branches }] = await Promise.all([
+  const [expenses, categories, metrics, { data: branches }] = await Promise.all([
     listExpenses({
       page: Number.isFinite(page) ? page : 1,
       category: searchParams.category || undefined,
@@ -32,6 +33,7 @@ export default async function ExpensesPage({
       to: searchParams.to,
     }),
     listExpenseCategories(),
+    getExpenseMetrics(),
     supabase
       .from("branches")
       .select("*")
@@ -43,6 +45,7 @@ export default async function ExpensesPage({
     <ExpensesClient
       expenses={expenses}
       categories={categories}
+      metrics={metrics}
       branches={(branches as Branch[] | null) ?? []}
       canManage={canManageExpenses(profile.role)}
       filters={{

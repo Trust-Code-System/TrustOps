@@ -29,17 +29,32 @@ function ShortDate({ date }: { date: string }) {
   );
 }
 
+function ymd(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+
+/** Quick-range presets for the Stitch-style toggle. */
+function quickRanges() {
+  const now = new Date();
+  const to = ymd(now);
+  const last7 = { label: "7 days", from: ymd(new Date(Date.now() - 6 * 86_400_000)), to };
+  const last30 = { label: "30 days", from: ymd(new Date(Date.now() - 29 * 86_400_000)), to };
+  const qStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+  const quarter = { label: "This quarter", from: ymd(qStart), to };
+  return [last7, last30, quarter];
+}
+
 function MiniBars({ points }: { points: DailyPoint[] }) {
   const visible = points.slice(-14);
   const max = maxValue(visible.map((p) => p.revenue));
   return (
-    <div className="flex h-48 items-end gap-2 border-b border-border-subtle pt-4">
+    <div className="flex h-56 items-end gap-2 border-b border-border-subtle pt-4">
       {visible.map((p) => {
         const pct = Math.max(4, Math.round((p.revenue / max) * 100));
         return (
-          <div key={p.date} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+          <div key={p.date} className="group flex min-w-0 flex-1 flex-col items-center gap-2">
             <div
-              className="w-full rounded-sm bg-primary-600"
+              className="w-full rounded-t-sm bg-primary-200 transition-colors group-hover:bg-primary-600"
               style={{ height: `${pct}%` }}
               title={`${p.date}: ${p.revenue}`}
             />
@@ -53,32 +68,20 @@ function MiniBars({ points }: { points: DailyPoint[] }) {
   );
 }
 
-function ProgressRow({
-  label,
-  value,
-  max,
-  sub,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  sub?: string;
-}) {
-  const pct = Math.max(2, Math.round((value / Math.max(1, max)) * 100));
-  return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between gap-4">
-        <div>
-          <p className="text-body-strong text-text-primary">{label}</p>
-          {sub && <p className="text-small text-text-muted">{sub}</p>}
-        </div>
-        <Money kobo={value} />
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-        <div className="h-full rounded-full bg-primary-600" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
+const AVATAR_TONES = [
+  "bg-primary-50 text-primary-700",
+  "bg-success-50 text-success-700",
+  "bg-warning-50 text-warning-700",
+  "bg-info-50 text-info-500",
+];
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
 }
 
 export default async function AnalyticsPage({
@@ -91,16 +94,28 @@ export default async function AnalyticsPage({
   const hasActivity = data.daily.some(
     (p) => p.revenue || p.salesCount || p.expenses || p.newCustomers,
   );
-  const maxProductRevenue = maxValue(data.topProducts.map((p) => p.revenue));
   const maxCustomerSpend = maxValue(data.topCustomers.map((c) => c.spend));
+  const maxProductRevenue = maxValue(data.topProducts.map((p) => p.revenue));
+
+  const avgSaleValue =
+    data.totals.salesCount > 0
+      ? Math.round(data.totals.revenue / data.totals.salesCount)
+      : 0;
+  const profitMargin =
+    data.totals.revenue > 0
+      ? Math.round((data.totals.profit / data.totals.revenue) * 100)
+      : 0;
+
+  const presets = quickRanges();
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-display">Analytics</h1>
+          <h1 className="text-display">Performance Overview</h1>
           <p className="mt-1 text-body text-text-secondary">
-            Revenue, profit, customers, cashflow, and outstanding balances.
+            Track your business metrics and growth trends.
           </p>
         </div>
         <div className="flex gap-3">
@@ -116,31 +131,56 @@ export default async function AnalyticsPage({
         </div>
       </div>
 
-      <form className="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-card p-4 sm:flex-row sm:items-end">
-        <label className="space-y-1">
-          <span className="text-caption font-[500] uppercase tracking-[0.04em] text-text-muted">
-            From
-          </span>
-          <Input type="date" name="from" defaultValue={data.range.from} />
-        </label>
-        <label className="space-y-1">
-          <span className="text-caption font-[500] uppercase tracking-[0.04em] text-text-muted">
-            To
-          </span>
-          <Input type="date" name="to" defaultValue={data.range.to} />
-        </label>
-        <Button type="submit">Apply range</Button>
-      </form>
+      {/* Range presets + custom */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-2" aria-label="Quick ranges">
+          {presets.map((p) => {
+            const active = data.range.from === p.from && data.range.to === p.to;
+            return (
+              <Link
+                key={p.label}
+                href={`/analytics?from=${p.from}&to=${p.to}`}
+                aria-current={active ? "true" : undefined}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-small font-[600] transition-colors",
+                  active
+                    ? "bg-primary-600 text-text-on-primary"
+                    : "bg-gray-100 text-text-secondary hover:bg-gray-200",
+                )}
+              >
+                {p.label}
+              </Link>
+            );
+          })}
+        </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <form className="flex items-end gap-2">
+          <label className="space-y-1">
+            <span className="sr-only">From</span>
+            <Input type="date" name="from" defaultValue={data.range.from} aria-label="From" />
+          </label>
+          <label className="space-y-1">
+            <span className="sr-only">To</span>
+            <Input type="date" name="to" defaultValue={data.range.to} aria-label="To" />
+          </label>
+          <Button type="submit" variant="secondary">
+            Apply
+          </Button>
+        </form>
+      </div>
+
+      {/* Metric cards */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <MetricCard
-          label="Revenue"
+          label="Total revenue"
           value={<Money kobo={data.totals.revenue} />}
           delta={data.revenueDelta ?? undefined}
         />
-        <MetricCard label="Profit" value={<Money kobo={data.totals.profit} />} />
-        <MetricCard label="Expenses" value={<Money kobo={data.totals.expenses} />} />
-        <MetricCard label="Outstanding" value={<Money kobo={data.totals.outstanding} />} />
+        <MetricCard
+          label="Average sale value"
+          value={<Money kobo={avgSaleValue} />}
+        />
+        <MetricCard label="Profit margin" value={`${profitMargin}%`} />
       </div>
 
       {!hasActivity ? (
@@ -152,89 +192,123 @@ export default async function AnalyticsPage({
         />
       ) : (
         <>
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue over time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MiniBars points={data.daily} />
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div>
-                  <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
-                    Sales
-                  </p>
-                  <p className="mt-1 text-h2 tabular">{data.totals.salesCount}</p>
-                </div>
-                <div>
-                  <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
-                    New customers
-                  </p>
-                  <p className="mt-1 text-h2 tabular">{data.totals.newCustomers}</p>
-                </div>
-                <div>
-                  <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
-                    Cash in
-                  </p>
-                  <p className="mt-1 text-h2 tabular">
-                    <Money kobo={data.totals.cashIn} />
-                  </p>
-                </div>
-                <div>
-                  <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
-                    Cash out
-                  </p>
-                  <p className="mt-1 text-h2 tabular">
-                    <Money kobo={data.totals.cashOut} />
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card>
+          {/* Revenue trend + top clients */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Top products</CardTitle>
+                <CardTitle>Revenue trend</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {data.topProducts.length === 0 ? (
-                  <p className="text-small text-text-muted">No product sales in this range.</p>
-                ) : (
-                  data.topProducts.map((p) => (
-                    <ProgressRow
-                      key={p.product_id}
-                      label={p.product_name}
-                      value={p.revenue}
-                      max={maxProductRevenue}
-                      sub={`${p.quantity_sold} sold`}
-                    />
-                  ))
-                )}
+              <CardContent>
+                <MiniBars points={data.daily} />
+                <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <Stat label="Sales" value={data.totals.salesCount} />
+                  <Stat label="New customers" value={data.totals.newCustomers} />
+                  <Stat label="Cash in" value={<Money kobo={data.totals.cashIn} />} />
+                  <Stat label="Cash out" value={<Money kobo={data.totals.cashOut} />} />
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Top customers</CardTitle>
+                <CardTitle>Top clients</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {data.topCustomers.length === 0 ? (
-                  <p className="text-small text-text-muted">No customer sales in this range.</p>
+                  <p className="text-small text-text-muted">
+                    No customer sales in this range.
+                  </p>
                 ) : (
-                  data.topCustomers.map((c) => (
-                    <ProgressRow
+                  data.topCustomers.map((c, i) => (
+                    <div
                       key={c.customer_id}
-                      label={c.customer_name}
-                      value={c.spend}
-                      max={maxCustomerSpend}
-                      sub={`${c.invoice_count} invoice${c.invoice_count === 1 ? "" : "s"}`}
-                    />
+                      className="flex items-center gap-3 border-b border-border-subtle pb-3 last:border-0 last:pb-0"
+                    >
+                      <span
+                        className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-caption font-[600]",
+                          AVATAR_TONES[i % AVATAR_TONES.length],
+                        )}
+                        aria-hidden="true"
+                      >
+                        {initials(c.customer_name)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-small font-[600] text-text-primary">
+                          {c.customer_name}
+                        </p>
+                        <p className="text-caption text-text-muted">
+                          {c.invoice_count} invoice{c.invoice_count === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <Money kobo={c.spend} className="shrink-0 text-small" />
+                    </div>
                   ))
                 )}
               </CardContent>
             </Card>
           </div>
 
+          {/* Top performing products */}
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <CardTitle>Top performing products</CardTitle>
+            </CardHeader>
+            {data.topProducts.length === 0 ? (
+              <CardContent>
+                <p className="text-small text-text-muted">
+                  No product sales in this range.
+                </p>
+              </CardContent>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <Th>Product name</Th>
+                      <Th align="right">Units sold</Th>
+                      <Th align="right">Revenue</Th>
+                      <Th>Share</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.topProducts.map((p) => {
+                      const pct = Math.max(
+                        4,
+                        Math.round((p.revenue / maxProductRevenue) * 100),
+                      );
+                      return (
+                        <tr
+                          key={p.product_id}
+                          className="border-b border-border-subtle last:border-0"
+                        >
+                          <td className="px-4 py-3 text-[15px] font-[600] text-text-primary">
+                            {p.product_name}
+                          </td>
+                          <td className="px-4 py-3 text-right tabular text-text-secondary">
+                            {p.quantity_sold}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Money kobo={p.revenue} className="text-[15px]" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-2 w-32 overflow-hidden rounded-full bg-gray-100">
+                              <div
+                                className="h-full rounded-full bg-primary-600"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+
+          {/* Outstanding aging + branch comparison */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
@@ -289,5 +363,36 @@ export default async function AnalyticsPage({
         </>
       )}
     </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-caption uppercase tracking-[0.04em] text-text-muted">
+        {label}
+      </p>
+      <p className="mt-1 text-h2 tabular">{value}</p>
+    </div>
+  );
+}
+
+function Th({
+  children,
+  align = "left",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+}) {
+  return (
+    <th
+      scope="col"
+      className={cn(
+        "border-b border-border-subtle px-4 py-3 text-caption font-[600] uppercase tracking-[0.04em] text-text-muted",
+        align === "right" && "text-right",
+      )}
+    >
+      {children}
+    </th>
   );
 }
