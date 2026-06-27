@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { AiSparkle, MessageList } from "@/components/copilot/message-list";
+import { AiMark, MessageList } from "@/components/copilot/message-list";
 import {
   useAssistantStream,
   type ChatMessage,
@@ -138,7 +138,7 @@ export function AssistantClient({
               {/* Centered welcome */}
               <div className="flex flex-col items-center text-center">
                 <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-600 text-text-on-primary shadow-sm ring-4 ring-primary-100">
-                  <AiSparkle className="h-9 w-9" />
+                  <AiMark className="h-9 w-9" />
                 </span>
                 <h1 className="text-h1 text-text-primary">{greeting()}</h1>
                 <p className="mt-2 max-w-md text-body text-text-secondary">

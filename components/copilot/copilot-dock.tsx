@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Send, X } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { AiSparkle, MessageList } from "./message-list";
+import { AiMark, MessageList } from "./message-list";
 import { useAssistantStream } from "./use-assistant-stream";
 
 /**
@@ -80,7 +80,7 @@ export function CopilotDock({
           aria-label="Open AI copilot"
           className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-600 text-text-on-primary shadow-lg ring-4 ring-primary-100 transition-colors hover:bg-primary-700 md:bottom-6 md:right-6"
         >
-          <AiSparkle className="h-7 w-7" />
+          <AiMark className="h-7 w-7" />
         </button>
       )}
 
@@ -98,7 +98,7 @@ export function CopilotDock({
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-text-on-primary">
-                  <AiSparkle className="h-[18px] w-[18px]" />
+                  <AiMark className="h-[18px] w-[18px]" />
                 </span>
                 <span className="text-body-strong text-text-primary">AI Copilot</span>
               </div>

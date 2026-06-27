@@ -7,7 +7,7 @@ import {
   FileText,
   BarChart3,
   WalletCards,
-  Sparkles,
+  Orbit,
   Settings,
   LifeBuoy,
   Mail,
@@ -89,7 +89,7 @@ const TOPICS: Topic[] = [
     cta: "Open analytics",
   },
   {
-    icon: Sparkles,
+    icon: Orbit,
     title: "AI assistant",
     body: "Ask plain-language questions about your business. Answers come from your own data, grounded in real figures.",
     href: "/assistant",

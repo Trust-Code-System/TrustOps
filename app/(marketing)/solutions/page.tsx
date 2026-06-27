@@ -4,7 +4,7 @@ import {
   Package,
   ScanLine,
   FileText,
-  Sparkles,
+  Orbit,
   BarChart3,
   WalletCards,
   Store,
@@ -59,7 +59,7 @@ const SOLUTIONS = [
     body: "Revenue trends, payment mix, and branch comparisons — the whole business at a glance.",
   },
   {
-    icon: Sparkles,
+    icon: Orbit,
     title: "AI Assistant",
     body: "Ask questions in plain language and get answers, anomalies, and restock advice. Powered by Claude.",
   },
