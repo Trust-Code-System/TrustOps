@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { Analytics } from "@vercel/analytics/next";
 
 /*
  * Three self-hosted families via next/font (no layout shift):
@@ -53,6 +54,7 @@ export default function RootLayout({
     >
       <body>
         <ToastProvider>{children}</ToastProvider>
+        <Analytics />
       </body>
     </html>
   );
