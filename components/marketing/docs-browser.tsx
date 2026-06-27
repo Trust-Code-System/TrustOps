@@ -7,7 +7,7 @@ import {
   Rocket,
   ScanLine,
   Package,
-  Sparkles,
+  Orbit,
   BarChart3,
   CreditCard,
   ArrowUpRight,
@@ -63,7 +63,7 @@ const CATEGORIES: DocCategory[] = [
     ],
   },
   {
-    icon: Sparkles,
+    icon: Orbit,
     title: "AI Assistant",
     blurb: "Ask questions about your business in plain language.",
     articles: [

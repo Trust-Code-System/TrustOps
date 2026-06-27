@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Sparkles } from "lucide-react";
+import { Orbit } from "lucide-react";
 import { Markdown } from "@/components/ui/markdown";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "./use-assistant-stream";
@@ -30,7 +30,7 @@ export function MessageList({
           >
             {!isUser && (
               <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary">
-                <Bot className="h-[18px] w-[18px]" aria-hidden="true" />
+                <Orbit className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
             )}
             <div
@@ -75,7 +75,7 @@ export function TypingIndicator() {
   return (
     <div className="flex justify-start gap-3">
       <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-primary-600">
-        <Sparkles className="h-[18px] w-[18px] animate-pulse" aria-hidden="true" />
+        <Orbit className="h-[18px] w-[18px] animate-pulse" aria-hidden="true" />
       </span>
       <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm border border-border-subtle bg-surface-card px-4 py-3 text-small text-text-muted">
         <Dot /> <Dot delay="150ms" /> <Dot delay="300ms" />
@@ -95,22 +95,12 @@ function Dot({ delay = "0ms" }: { delay?: string }) {
 }
 
 /**
- * Generative-AI sparkle glyph — a large four-point star flanked by two smaller
- * ones. Reads as "intelligent assistant" far better than a literal robot.
- * Inherits currentColor.
+ * The TrustOps AI brand mark. An orbit glyph (a point circling a core) reads as
+ * a live, intelligent system and stays distinct from the now-ubiquitous AI
+ * sparkle. This is the single source of the AI logo — every AI touchpoint
+ * (copilot button, assistant welcome, chat avatar, nav, dashboard, marketing)
+ * renders this same icon. Inherits currentColor.
  */
-export function AiSparkle({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      role="img"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M11.5 3 9.4 8.4 4 10.5l5.4 2.1L11.5 18l2.1-5.4L19 10.5l-5.4-2.1L11.5 3Z" />
-      <path d="M18.5 2.5 17.6 4.9 15.2 5.8l2.4.9.9 2.4.9-2.4 2.4-.9-2.4-.9-.9-2.4Z" />
-      <path d="M18 14.5 17.3 16.3 15.5 17l1.8.7.7 1.8.7-1.8 1.8-.7-1.8-.7-.7-1.8Z" />
-    </svg>
-  );
+export function AiMark({ className }: { className?: string }) {
+  return <Orbit className={className} aria-hidden="true" />;
 }

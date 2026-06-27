@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  Sparkles,
+  Orbit,
   MessageSquare,
   TrendingUp,
   AlertTriangle,
@@ -99,7 +99,7 @@ export default function AiAssistantPage() {
             <GlassCard className="p-5 sm:p-7">
               <div className="mb-5 flex items-center gap-3 border-b border-white/5 pb-4">
                 <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-white", BRAND_GRADIENT)}>
-                  <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                  <Orbit className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                 </span>
                 <div>
                   <p className="text-body-strong text-white">TrustOps Assistant</p>

@@ -11,7 +11,7 @@ import {
 import {
   Package,
   ScanLine,
-  Sparkles,
+  Orbit,
   LineChart as LineChartIcon,
   ArrowRight,
   TrendingUp,
@@ -247,7 +247,7 @@ const BENTO = {
     body: "Record transactions in seconds — and see exactly how customers pay.",
   },
   ai: {
-    icon: Sparkles,
+    icon: Orbit,
     title: "AI Assistant",
     body: "Your business data, decoded. Powered by Claude.",
   },
@@ -329,7 +329,7 @@ function Features() {
             </div>
             <div className="relative mt-8 flex items-start gap-3 rounded-2xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-4">
               <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${BRAND_GRADIENT}`}>
-                <Sparkles className="h-3.5 w-3.5 text-white" strokeWidth={2} aria-hidden="true" />
+                <Orbit className="h-3.5 w-3.5 text-white" strokeWidth={2} aria-hidden="true" />
               </span>
               <p className="text-small italic leading-relaxed text-white/70">
                 &ldquo;Sales are up 15% this week. Consider restocking item XYZ before the weekend.&rdquo;
@@ -362,7 +362,7 @@ function Features() {
 const STEPS = [
   { n: "01", icon: Package, title: "Add your stock", body: "Import products in bulk or scan them in. Set prices, costs, and reorder points once." },
   { n: "02", icon: ScanLine, title: "Sell & invoice", body: "Record sales in seconds and send professional invoices. Inventory updates itself." },
-  { n: "03", icon: Sparkles, title: "Grow with AI", body: "Ask questions in plain language and get insights that tell you what to do next." },
+  { n: "03", icon: Orbit, title: "Grow with AI", body: "Ask questions in plain language and get insights that tell you what to do next." },
 ];
 
 function HowItWorks() {

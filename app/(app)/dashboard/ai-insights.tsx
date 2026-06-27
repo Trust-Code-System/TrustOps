@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bot, ArrowRight } from "lucide-react";
+import { Orbit, ArrowRight } from "lucide-react";
 import { listInsights } from "@/modules/ai/queries";
 
 /**
@@ -19,7 +19,7 @@ export async function AiInsights() {
       <div className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
 
       <div className="relative flex items-center gap-2">
-        <Bot className="h-5 w-5 text-white" aria-hidden="true" />
+        <Orbit className="h-5 w-5 text-white" aria-hidden="true" />
         <h3 className="text-h3 font-[600] text-white">AI Smart Insight</h3>
       </div>
 

@@ -8,7 +8,7 @@ import {
   BarChart3,
   WalletCards,
   FileDown,
-  Sparkles,
+  Orbit,
   LifeBuoy,
   ShieldCheck,
   type LucideIcon,
@@ -36,7 +36,7 @@ export const SIDEBAR_ITEMS: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Expenses", href: "/expenses", icon: WalletCards },
   { label: "Reports", href: "/reports", icon: FileDown },
-  { label: "Assistant", href: "/assistant", icon: Sparkles },
+  { label: "Assistant", href: "/assistant", icon: Orbit },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -57,7 +57,7 @@ export const MORE_ITEMS: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Expenses", href: "/expenses", icon: WalletCards },
   { label: "Reports", href: "/reports", icon: FileDown },
-  { label: "Assistant", href: "/assistant", icon: Sparkles },
+  { label: "Assistant", href: "/assistant", icon: Orbit },
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "Help Center", href: "/help", icon: LifeBuoy },
 ];
