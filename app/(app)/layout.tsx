@@ -6,6 +6,8 @@ import {
   listInAppNotifications,
   unreadNotificationCount,
 } from "@/modules/notifications/queries";
+import { aiConfigured } from "@/modules/ai/orchestrator";
+import { getAiSettings } from "@/modules/ai/queries";
 import type { Branch, Company } from "@/modules/shared/types";
 
 /**
@@ -39,17 +41,31 @@ export default async function AppLayout({
       unreadNotificationCount(),
     ]);
 
+  // Drives whether the global copilot dock renders (configured + owner-enabled).
+  const aiSettings = await getAiSettings(ctx.profile.company_id);
+
   return (
-    <AppShell
-      companyName={(company as Company | null)?.name ?? "TrustOps"}
-      userName={ctx.profile.full_name}
-      userRole={ctx.profile.role}
-      branches={(branches as Branch[] | null) ?? []}
-      notifications={notifications}
-      unreadCount={unreadCount}
-      isPlatformAdmin={isPlatformAdmin(ctx.email)}
-    >
-      {children}
-    </AppShell>
+    <>
+      {/* No-flash theme: apply the saved light preference before paint. Scoped to
+          the app so the marketing landing + auth keep their dark canvas. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{if(localStorage.getItem('trustops.theme')==='light'){document.documentElement.dataset.theme='light'}}catch(e){}`,
+        }}
+      />
+      <AppShell
+        companyName={(company as Company | null)?.name ?? "TrustOps"}
+        userName={ctx.profile.full_name}
+        userRole={ctx.profile.role}
+        branches={(branches as Branch[] | null) ?? []}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        isPlatformAdmin={isPlatformAdmin(ctx.email)}
+        aiConfigured={aiConfigured()}
+        aiEnabled={aiSettings.enabled}
+      >
+        {children}
+      </AppShell>
+    </>
   );
 }
