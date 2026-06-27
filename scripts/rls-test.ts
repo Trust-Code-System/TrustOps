@@ -29,6 +29,7 @@ const MIGRATIONS = [
   "supabase/migrations/0008_automation_functions.sql",
   "supabase/migrations/0009_analytics.sql",
   "supabase/migrations/0010_ai.sql",
+  "supabase/migrations/0012_fix_low_stock_dedupe.sql",
 ];
 const SHIM = "scripts/test/auth-shim.sql";
 
