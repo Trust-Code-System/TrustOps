@@ -6,6 +6,7 @@ import { ChevronDown, GitBranch, LogOut, ShieldCheck } from "lucide-react";
 import { Branch, Notification } from "@/modules/shared/types";
 import { signOut } from "@/modules/auth/actions";
 import { NotificationsBell } from "./notifications-bell";
+import { ThemeToggle } from "./theme-toggle";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +81,8 @@ export function TopBar({
             ))}
           </Dropdown>
         )}
+
+        <ThemeToggle />
 
         <NotificationsBell notifications={notifications} unreadCount={unreadCount} />
 
