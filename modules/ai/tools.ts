@@ -98,6 +98,29 @@ export const aiToolDefs = [
       additionalProperties: false,
     },
   },
+  {
+    name: "propose_action",
+    description:
+      "PROPOSE an action for the user to approve — you NEVER perform it yourself. Use when the user asks you to send a payment reminder, send a receipt, record a payment, or create an online payment link for an invoice. After calling this, tell the user you've prepared it and that they must tap Approve to run it. Never say it is done.",
+    input_schema: {
+      type: "object",
+      properties: {
+        action_type: {
+          type: "string",
+          enum: ["send_reminder", "send_receipt", "record_payment", "create_payment_link"],
+        },
+        invoice_number: { type: "string", description: "The invoice, e.g. INV-0001" },
+        amount: { type: "number", description: "Naira amount — required for record_payment" },
+        method: {
+          type: "string",
+          enum: ["cash", "transfer", "card", "other"],
+          description: "Payment method — for record_payment",
+        },
+      },
+      required: ["action_type", "invoice_number"],
+      additionalProperties: false,
+    },
+  },
 ] as const;
 
 export const aiToolNames = aiToolDefs.map((t) => t.name);
@@ -261,6 +284,77 @@ async function findCustomer(input: Json): Promise<ToolResult> {
   };
 }
 
+const ACTION_TYPES = ["send_reminder", "send_receipt", "record_payment", "create_payment_link"];
+
+async function proposeAction(input: Json): Promise<ToolResult> {
+  const type = String(input.action_type ?? "");
+  const invoiceNumber = String(input.invoice_number ?? "").trim();
+  if (!ACTION_TYPES.includes(type)) {
+    return { content: JSON.stringify({ error: "Unknown action_type" }), sources: [] };
+  }
+  if (!invoiceNumber) {
+    return { content: JSON.stringify({ error: "invoice_number is required" }), sources: [] };
+  }
+
+  const supabase = createClient();
+  // Resolve the invoice under the caller's RLS scope.
+  const { data: inv } = await supabase
+    .from("invoices")
+    .select("id, invoice_number, total, status, customer:customers(full_name)")
+    .ilike("invoice_number", invoiceNumber)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!inv) {
+    return { content: JSON.stringify({ error: `Invoice ${invoiceNumber} not found` }), sources: [] };
+  }
+  const invoice = inv as unknown as {
+    id: string;
+    invoice_number: string;
+    total: number;
+    customer: { full_name: string } | null;
+  };
+  const who = invoice.customer?.full_name ?? "the customer";
+
+  const params: Json = { invoice_id: invoice.id, invoice_number: invoice.invoice_number };
+  let summary = "";
+  if (type === "record_payment") {
+    const amountNaira = Number(input.amount);
+    if (!Number.isFinite(amountNaira) || amountNaira <= 0) {
+      return { content: JSON.stringify({ error: "A positive amount is required for record_payment" }), sources: [] };
+    }
+    const amountKobo = Math.round(amountNaira * 100);
+    const method = ["cash", "transfer", "card", "other"].includes(String(input.method))
+      ? String(input.method)
+      : "cash";
+    params.amount_kobo = amountKobo;
+    params.method = method;
+    summary = `Record a ${naira(amountKobo)} ${method} payment on ${invoice.invoice_number} (${who}).`;
+  } else if (type === "send_reminder") {
+    summary = `Send a payment reminder for ${invoice.invoice_number} to ${who}.`;
+  } else if (type === "send_receipt") {
+    summary = `Send the receipt for ${invoice.invoice_number} to ${who}.`;
+  } else {
+    summary = `Create an online payment link for ${invoice.invoice_number} (${who}).`;
+  }
+
+  const { error } = await supabase.rpc("propose_ai_action", {
+    p_type: type,
+    p_params: params,
+    p_summary: summary,
+    p_conversation: null,
+  });
+  if (error) return { content: JSON.stringify({ error: error.message }), sources: [] };
+
+  return {
+    content: JSON.stringify({
+      proposed: true,
+      summary,
+      note: "Prepared and AWAITING the user's approval in the app. Do NOT say it is done — ask them to approve it.",
+    }),
+    sources: [],
+  };
+}
+
 const EXECUTORS: Record<string, (input: Json) => Promise<ToolResult>> = {
   get_financial_summary: financialSummary,
   get_top_products: topProducts,
@@ -268,6 +362,7 @@ const EXECUTORS: Record<string, (input: Json) => Promise<ToolResult>> = {
   get_unpaid_invoices: unpaidInvoices,
   get_low_stock: lowStock,
   find_customer: findCustomer,
+  propose_action: proposeAction,
 };
 
 export async function executeTool(name: string, input: unknown): Promise<ToolResult> {

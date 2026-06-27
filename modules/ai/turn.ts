@@ -27,6 +27,8 @@ export type PreparedTurn = {
   system: string;
   text: string;
   mode: "chat" | "brief";
+  /** Claude spend cap hit — skip Claude, let the backup providers answer. */
+  capReached: boolean;
 };
 
 export type PrepareResult =
@@ -70,12 +72,12 @@ export async function prepareTurn(input: {
   if (!settings.enabled) {
     return { ok: false, error: "The assistant is turned off. An owner can enable it in Settings." };
   }
-  if (
+  // Claude spend cap: do NOT block. Mark it reached so the run skips Claude and
+  // a backup provider (Groq/Gemini) answers instead — the user never sees a cap
+  // error. If no backup is configured, the run degrades to a calm message.
+  const capReached =
     settings.monthly_cap_usd_cents !== null &&
-    (await getMonthSpendUsdCents()) >= settings.monthly_cap_usd_cents
-  ) {
-    return { ok: false, error: "This month's AI spend cap has been reached." };
-  }
+    (await getMonthSpendUsdCents()) >= settings.monthly_cap_usd_cents;
 
   const supabase = createClient();
 
@@ -131,6 +133,7 @@ export async function prepareTurn(input: {
       history,
       text,
       mode,
+      capReached,
       system: assistantSystemPrompt({
         companyName: (company as { name: string } | null)?.name ?? "your business",
         role: ctx.profile.role,

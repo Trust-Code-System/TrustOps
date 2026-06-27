@@ -63,7 +63,12 @@ export async function sendAssistantMessage(input: {
 
   let result;
   try {
-    result = await runAssistant({ system: t.system, history: t.history, userMessage: t.text });
+    result = await runAssistant({
+      system: t.system,
+      history: t.history,
+      userMessage: t.text,
+      skipPrimary: t.capReached,
+    });
   } catch {
     return {
       ok: false,

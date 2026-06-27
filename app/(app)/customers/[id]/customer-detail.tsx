@@ -18,16 +18,19 @@ import { useToast } from "@/components/ui/toast";
 import { formatDate } from "@/modules/shared/format";
 import { CustomerFormModal } from "../customer-form-modal";
 import type { Customer, Invoice } from "@/modules/shared/types";
+import type { TrustScore, TrustBand } from "@/modules/customers/trust";
 
 export function CustomerDetail({
   customer,
   invoices,
   totalSpend,
+  trust,
   canManage,
 }: {
   customer: Customer;
   invoices: Invoice[];
   totalSpend: number;
+  trust: TrustScore;
   canManage: boolean;
 }) {
   const router = useRouter();
@@ -97,7 +100,20 @@ export function CustomerDetail({
           </p>
           <p className="mt-2 text-metric tabular text-text-primary">{invoices.length}</p>
         </Card>
+        <Card className="p-4 sm:p-6">
+          <p className="text-caption font-[500] uppercase tracking-[0.04em] text-text-muted">
+            Trust score
+          </p>
+          <p className="mt-2 flex items-baseline gap-2">
+            <span className={`text-metric tabular ${BAND_TEXT[trust.band]}`}>
+              {trust.score ?? "—"}
+            </span>
+            <span className={`text-small font-[600] ${BAND_TEXT[trust.band]}`}>{trust.label}</span>
+          </p>
+        </Card>
       </div>
+
+      <TrustScoreCard trust={trust} />
 
       {customer.notes && (
         <Card>
@@ -142,6 +158,51 @@ export function CustomerDetail({
         customer={customer}
       />
     </div>
+  );
+}
+
+const BAND_TEXT: Record<TrustBand, string> = {
+  excellent: "text-success-700",
+  good: "text-success-700",
+  fair: "text-warning-700",
+  at_risk: "text-danger-700",
+  new: "text-text-muted",
+};
+
+function TrustScoreCard({ trust }: { trust: TrustScore }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Creditworthiness</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+          {trust.factors.map((f) => (
+            <div key={f.label} className="flex items-center justify-between gap-4">
+              <dt className="text-body text-text-secondary">{f.label}</dt>
+              <dd className="text-body-strong text-text-primary">{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+        {trust.suggestedCreditKobo > 0 ? (
+          <p className="rounded-lg bg-success-50 p-3 text-small text-success-700">
+            Based on this history, a credit limit up to{" "}
+            <span className="font-[700]">
+              <Money kobo={trust.suggestedCreditKobo} />
+            </span>{" "}
+            looks safe. You decide.
+          </p>
+        ) : trust.band === "at_risk" ? (
+          <p className="rounded-lg bg-danger-50 p-3 text-small text-danger-700">
+            Consider requiring upfront payment until their record improves.
+          </p>
+        ) : trust.band === "new" ? (
+          <p className="rounded-lg bg-gray-50 p-3 text-small text-text-muted">
+            Not enough history yet to gauge credit. The score builds as they buy and pay.
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }
 

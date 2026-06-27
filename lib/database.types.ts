@@ -29,6 +29,8 @@ import type {
   AiUsage,
   AiInsight,
   SupportRequest,
+  PaymentIntent,
+  AiAction,
 } from "@/modules/shared/types";
 
 type Row<T> = T;
@@ -69,6 +71,8 @@ export interface Database {
       ai_usage: Table<AiUsage>;
       ai_insights: Table<AiInsight>;
       support_requests: Table<SupportRequest>;
+      payment_intents: Table<PaymentIntent>;
+      ai_actions: Table<AiAction>;
     };
     Views: Record<string, never>;
     Functions: {
@@ -186,6 +190,38 @@ export interface Database {
       ai_month_usd_cents: {
         Args: Record<string, never>;
         Returns: number;
+      };
+      create_payment_intent: {
+        Args: { p_payload: unknown };
+        Returns: PaymentIntent;
+      };
+      update_payment_intent_link: {
+        Args: { p_payload: unknown };
+        Returns: undefined;
+      };
+      reconcile_gateway_payment: {
+        Args: { p_payload: unknown };
+        Returns: unknown;
+      };
+      get_public_invoice: {
+        Args: { p_ref: string };
+        Returns: unknown;
+      };
+      propose_ai_action: {
+        Args: { p_type: string; p_params: unknown; p_summary: string; p_conversation: string | null };
+        Returns: AiAction;
+      };
+      set_storefront: {
+        Args: { p_enabled: boolean; p_whatsapp: string | null };
+        Returns: unknown;
+      };
+      get_public_catalog: {
+        Args: { p_token: string };
+        Returns: unknown;
+      };
+      set_ai_action_status: {
+        Args: { p_id: string; p_status: string; p_result: unknown };
+        Returns: undefined;
       };
     };
     Enums: {

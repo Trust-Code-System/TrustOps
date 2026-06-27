@@ -29,27 +29,42 @@ function dateInputValue(iso?: string) {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
+export type ExpensePrefill = {
+  category?: string;
+  amountKobo?: number;
+  spentAt?: string;
+  description?: string;
+};
+
 export function ExpenseFormModal({
   open,
   onClose,
   expense,
+  prefill,
   branches,
 }: {
   open: boolean;
   onClose: () => void;
   expense: ExpenseRow | null;
+  prefill?: ExpensePrefill | null;
   branches: Branch[];
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const isEdit = !!expense;
-  const [category, setCategory] = useState(expense?.category ?? "");
+  const [category, setCategory] = useState(expense?.category ?? prefill?.category ?? "");
   const [branchId, setBranchId] = useState(expense?.branch_id ?? "");
   const [amount, setAmount] = useState(
-    expense ? String(koboToNaira(expense.amount)) : "",
+    expense
+      ? String(koboToNaira(expense.amount))
+      : prefill?.amountKobo != null
+        ? String(koboToNaira(prefill.amountKobo))
+        : "",
   );
-  const [spentAt, setSpentAt] = useState(dateInputValue(expense?.spent_at));
-  const [description, setDescription] = useState(expense?.description ?? "");
+  const [spentAt, setSpentAt] = useState(
+    expense?.spent_at ? dateInputValue(expense.spent_at) : prefill?.spentAt ?? dateInputValue(),
+  );
+  const [description, setDescription] = useState(expense?.description ?? prefill?.description ?? "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);

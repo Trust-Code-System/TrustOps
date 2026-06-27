@@ -27,7 +27,9 @@ import type {
   ExpenseMetrics,
 } from "@/modules/analytics/queries";
 import type { Branch } from "@/modules/shared/types";
-import { ExpenseFormModal } from "./expense-form-modal";
+import { ExpenseFormModal, type ExpensePrefill } from "./expense-form-modal";
+import { ScanReceiptButton } from "./scan-receipt-button";
+import type { ScannedExpense } from "@/modules/ai/receipt";
 
 type Filters = { category: string; from: string; to: string };
 
@@ -49,6 +51,8 @@ export function ExpensesClient({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<ExpenseRow | null>(null);
+  const [prefill, setPrefill] = useState<ExpensePrefill | null>(null);
+  const [scanKey, setScanKey] = useState(0);
   const [open, setOpen] = useState(false);
 
   function push(next: Partial<Filters & { page: number }>) {
@@ -65,6 +69,19 @@ export function ExpensesClient({
 
   function openAdd() {
     setEditing(null);
+    setPrefill(null);
+    setOpen(true);
+  }
+
+  function onScanned(data: ScannedExpense) {
+    setEditing(null);
+    setPrefill({
+      category: data.category,
+      amountKobo: data.amountKobo,
+      spentAt: data.spentAt,
+      description: data.description,
+    });
+    setScanKey((k) => k + 1); // force the modal to remount with the new prefill
     setOpen(true);
   }
 
@@ -83,9 +100,12 @@ export function ExpensesClient({
           </p>
         </div>
         {canManage && (
-          <Button onClick={openAdd}>
-            <Plus /> Add expense
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ScanReceiptButton onScanned={onScanned} />
+            <Button onClick={openAdd}>
+              <Plus /> Add expense
+            </Button>
+          </div>
         )}
       </div>
 
@@ -314,10 +334,11 @@ export function ExpensesClient({
 
       {canManage && (
         <ExpenseFormModal
-          key={editing?.id ?? "new"}
+          key={editing?.id ?? `new-${scanKey}`}
           open={open}
           onClose={() => setOpen(false)}
           expense={editing}
+          prefill={editing ? null : prefill}
           branches={branches}
         />
       )}

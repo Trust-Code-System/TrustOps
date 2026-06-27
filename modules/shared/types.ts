@@ -40,6 +40,9 @@ export type Company = {
   id: UUID;
   name: string;
   currency: string; // ISO 4217, default 'NGN'
+  storefront_token: string | null;
+  storefront_enabled: boolean;
+  storefront_whatsapp: string | null;
   created_at: ISODateTime;
   updated_at: ISODateTime;
 };
@@ -90,6 +93,7 @@ export type Invoice = {
   issued_at: ISODateTime;
   due_at: ISODateTime | null;
   deleted_at: ISODateTime | null;
+  client_uuid: UUID | null; // offline-capture idempotency key (migration 0014)
   created_at: ISODateTime;
   updated_at: ISODateTime;
 };
@@ -154,6 +158,27 @@ export type Payment = {
   reference: string | null;
   paid_at: ISODateTime;
   created_at: ISODateTime;
+};
+
+export type PaymentProvider = "paystack" | "monnify" | "simulated";
+export type PaymentIntentStatus = "pending" | "success" | "failed" | "expired";
+
+/** An online charge for one invoice (pay-by-link). See migration 0013. */
+export type PaymentIntent = {
+  id: UUID;
+  company_id: UUID;
+  invoice_id: UUID;
+  provider: PaymentProvider;
+  reference: string;
+  provider_reference: string | null;
+  amount: Kobo;
+  status: PaymentIntentStatus;
+  authorization_url: string | null;
+  public_token: string;
+  customer_email: string | null;
+  created_at: ISODateTime;
+  updated_at: ISODateTime;
+  paid_at: ISODateTime | null;
 };
 
 export type AuditLog = {
@@ -351,4 +376,26 @@ export type SupportRequest = {
   message: string;
   status: SupportRequestStatus;
   created_at: ISODateTime;
+};
+
+export type AiActionType =
+  | "send_reminder"
+  | "send_receipt"
+  | "record_payment"
+  | "create_payment_link";
+export type AiActionStatus = "pending" | "approved" | "rejected" | "executed" | "failed";
+
+/** A copilot-proposed action awaiting the user's yes/no. See migration 0016. */
+export type AiAction = {
+  id: UUID;
+  company_id: UUID;
+  user_id: UUID;
+  conversation_id: UUID | null;
+  type: AiActionType;
+  params: Record<string, unknown>;
+  summary: string;
+  status: AiActionStatus;
+  result: Record<string, unknown> | null;
+  created_at: ISODateTime;
+  decided_at: ISODateTime | null;
 };

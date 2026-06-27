@@ -3,6 +3,9 @@ import { z } from "zod";
 /** Server-side validation for record_sale. The RPC validates again in the DB. */
 export const recordSaleSchema = z.object({
   customerId: z.string().uuid("Pick a customer"),
+  // Offline-capture idempotency key (client-generated). A replayed sale with the
+  // same key returns the original invoice instead of creating a duplicate.
+  clientUuid: z.string().uuid().optional(),
   branchId: z.string().uuid().nullable().optional(),
   dueAt: z.string().datetime().nullable().optional(),
   discountKobo: z.number().int().min(0).default(0),

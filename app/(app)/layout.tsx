@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell/app-shell";
+import { PWARegister } from "@/components/pwa/pwa-register";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext, isPlatformAdmin } from "@/modules/auth/session";
 import {
@@ -66,6 +67,7 @@ export default async function AppLayout({
       >
         {children}
       </AppShell>
+      <PWARegister />
     </>
   );
 }

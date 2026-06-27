@@ -15,10 +15,12 @@ import {
 import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { AiMark, MessageList } from "@/components/copilot/message-list";
+import { PendingActions } from "@/components/copilot/pending-actions";
 import {
   useAssistantStream,
   type ChatMessage,
 } from "@/components/copilot/use-assistant-stream";
+import type { AiAction } from "@/modules/shared/types";
 
 const SUGGESTIONS: { icon: LucideIcon; title: string; question: string }[] = [
   {
@@ -55,12 +57,14 @@ export function AssistantClient({
   enabled,
   conversations,
   activeId,
+  pendingActions,
   initialMessages,
 }: {
   configured: boolean;
   enabled: boolean;
   conversations: { id: string; title: string }[];
   activeId: string | null;
+  pendingActions: AiAction[];
   initialMessages: ChatMessage[];
 }) {
   const router = useRouter();
@@ -180,6 +184,9 @@ export function AssistantClient({
           <MessageList messages={messages} sending={sending} />
           <div ref={endRef} />
         </div>
+
+        {/* Copilot proposals awaiting the user's yes/no */}
+        <PendingActions actions={pendingActions} />
 
         {error && <Alert className="mb-3">{error}</Alert>}
 

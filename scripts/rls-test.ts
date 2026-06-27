@@ -30,6 +30,11 @@ const MIGRATIONS = [
   "supabase/migrations/0009_analytics.sql",
   "supabase/migrations/0010_ai.sql",
   "supabase/migrations/0012_fix_low_stock_dedupe.sql",
+  "supabase/migrations/0013_payments.sql",
+  "supabase/migrations/0014_offline_idempotency.sql",
+  "supabase/migrations/0015_public_invoice.sql",
+  "supabase/migrations/0016_ai_actions.sql",
+  "supabase/migrations/0017_storefront.sql",
 ];
 const SHIM = "scripts/test/auth-shim.sql";
 
@@ -858,6 +863,150 @@ async function main() {
   const bMonth = (await asUser<{ n: string }>(ownerB, "select ai_month_usd_cents() as n")).rows[0].n;
   check("ai_month_usd_cents counts only the caller's company (A = 123)", Number(aMonth) === 123);
   check("ai_month_usd_cents is tenant-scoped (B = 999, not 1122)", Number(bMonth) === 999);
+
+  // =========================================================================
+  console.log("\n[24] Phase 3 payments — intents, tenancy, service-role reconcile");
+  // =========================================================================
+  // A fresh UNPAID sale for Company A to charge online.
+  const payInvoice = (
+    await asUser<{ r: { invoice: { id: string } } }>(
+      ownerA,
+      "select record_sale($1::jsonb) as r",
+      [
+        JSON.stringify({
+          customer_id: custA,
+          items: [{ description: "Consulting", quantity: 1, unit_price: 20000_00 }],
+        }),
+      ],
+    )
+  ).rows[0].r.invoice.id;
+
+  const payIntent = (
+    await asUser<{ r: { reference: string; amount: number; status: string } }>(
+      ownerA,
+      "select create_payment_intent($1::jsonb) as r",
+      [JSON.stringify({ invoice_id: payInvoice, provider: "simulated" })],
+    )
+  ).rows[0].r;
+  check(
+    "create_payment_intent returns a pending intent for the full balance",
+    payIntent.status === "pending" && Number(payIntent.amount) === 20000_00 && !!payIntent.reference,
+  );
+
+  // Tenancy: B cannot see A's intents, and cannot open one on A's invoice.
+  const bSeesIntents = await asUser(ownerB, "select id from payment_intents");
+  check("B sees ZERO of A's payment_intents (RLS)", bSeesIntents.rowCount === 0);
+  await expectReject(
+    "B CANNOT create a payment intent on A's invoice",
+    ownerB,
+    "select create_payment_intent($1::jsonb)",
+    [JSON.stringify({ invoice_id: payInvoice, provider: "simulated" })],
+  );
+
+  // reconcile is service-role only — an authenticated user has no execute grant.
+  await expectReject(
+    "Authenticated user CANNOT call reconcile_gateway_payment (service-role only)",
+    ownerA,
+    "select reconcile_gateway_payment($1::jsonb)",
+    [JSON.stringify({ reference: payIntent.reference, status: "success", amount: 20000_00 })],
+  );
+
+  // Service-role reconcile (raw connection = superuser, bypasses the grant).
+  const payRecon = (
+    await client.query("select reconcile_gateway_payment($1::jsonb) as r", [
+      JSON.stringify({
+        reference: payIntent.reference,
+        provider_reference: "SIM_TEST_1",
+        amount: 20000_00,
+        status: "success",
+        method: "transfer",
+      }),
+    ])
+  ).rows[0].r as { reconciled?: boolean };
+  check("reconcile_gateway_payment records the payment (reconciled=true)", payRecon.reconciled === true);
+
+  const payInvStatus = (
+    await client.query("select status from invoices where id=$1", [payInvoice])
+  ).rows[0].status as string;
+  check("Invoice flips to 'paid' after reconciliation", payInvStatus === "paid");
+
+  const payIntentStatus = (
+    await client.query("select status from payment_intents where reference=$1", [payIntent.reference])
+  ).rows[0].status as string;
+  check("Payment intent flips to 'success'", payIntentStatus === "success");
+
+  // Idempotency: a duplicate webhook must NOT double-record.
+  const payRecon2 = (
+    await client.query("select reconcile_gateway_payment($1::jsonb) as r", [
+      JSON.stringify({ reference: payIntent.reference, status: "success", amount: 20000_00 }),
+    ])
+  ).rows[0].r as { already_reconciled?: boolean };
+  const payPaymentCount = Number(
+    (await client.query("select count(*)::int n from payments where invoice_id=$1", [payInvoice])).rows[0].n,
+  );
+  check(
+    "Duplicate webhook is idempotent (already_reconciled, exactly 1 payment)",
+    payRecon2.already_reconciled === true && payPaymentCount === 1,
+  );
+
+  // =========================================================================
+  console.log("\n[25] Offline idempotency — replayed sale returns the same invoice");
+  // =========================================================================
+  const clientUuid = randomUUID();
+  const salePayload = JSON.stringify({
+    customer_id: custA,
+    client_uuid: clientUuid,
+    items: [{ description: "Offline sale", quantity: 1, unit_price: 7500_00 }],
+    payment: { amount: 7500_00, method: "cash" },
+  });
+  const firstSale = (
+    await asUser<{ r: { invoice: { id: string }; idempotent_replay?: boolean } }>(
+      ownerA,
+      "select record_sale($1::jsonb) as r",
+      [salePayload],
+    )
+  ).rows[0].r;
+  const replaySale = (
+    await asUser<{ r: { invoice: { id: string }; idempotent_replay?: boolean } }>(
+      ownerA,
+      "select record_sale($1::jsonb) as r",
+      [salePayload],
+    )
+  ).rows[0].r;
+  check(
+    "Replaying a sale with the same client_uuid returns the SAME invoice (no dup)",
+    firstSale.invoice.id === replaySale.invoice.id && replaySale.idempotent_replay === true,
+  );
+  const dupCount = Number(
+    (await client.query("select count(*)::int n from invoices where client_uuid=$1", [clientUuid]))
+      .rows[0].n,
+  );
+  check("Exactly ONE invoice exists for the offline client_uuid", dupCount === 1);
+
+  // =========================================================================
+  console.log("\n[26] Copilot actions — per-user scoping + decision gating");
+  // =========================================================================
+  const proposal = (
+    await asUser<{ r: { id: string; status: string } }>(
+      ownerA,
+      "select propose_ai_action($1,$2::jsonb,$3,$4) as r",
+      ["send_receipt", JSON.stringify({ invoice_id: payInvoice }), "Send the receipt for INV", null],
+    )
+  ).rows[0].r;
+  check("propose_ai_action creates a pending proposal", proposal.status === "pending");
+
+  const bSeesActions = await asUser(ownerB, "select id from ai_actions");
+  check("B sees ZERO of A's copilot actions (tenant isolation)", bSeesActions.rowCount === 0);
+
+  const staffSeesActions = await asUser(staffA, "select id from ai_actions");
+  check("Another USER in the same company sees ZERO (per-user scoping)", staffSeesActions.rowCount === 0);
+
+  await expectReject(
+    "A different user CANNOT decide someone else's proposed action",
+    staffA,
+    "select set_ai_action_status($1,'approved',null)",
+    [proposal.id],
+  );
 
   // --- summary ---------------------------------------------------------------
   console.log(`\n${"=".repeat(60)}`);
