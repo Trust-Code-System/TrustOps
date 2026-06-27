@@ -11,8 +11,12 @@ export const CANVAS = "#0a0712";
 export const BRAND_GRADIENT =
   "bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500";
 
+// `inline-block` + right padding extends the clipped gradient background past
+// the slanted overhang of the final italic glyph, so the last letter (e.g. the
+// "I" in "AI", the "e" in "glance") renders fully instead of being cut off. The
+// matching negative margin keeps centered headings perfectly centered.
 export const TEXT_GRADIENT =
-  "bg-gradient-to-r from-indigo-300 via-fuchsia-200 to-violet-300 bg-clip-text text-transparent";
+  "inline-block bg-gradient-to-r from-indigo-300 via-fuchsia-200 to-violet-300 bg-clip-text text-transparent pr-[0.14em] -mr-[0.14em]";
 
 /** Primary (white pill) and ghost (glass outline) button classes. */
 export const BTN_PRIMARY =
