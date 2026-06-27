@@ -220,13 +220,17 @@ export function assistantSystemPrompt(opts: {
   companyName: string;
   role: string;
   today: string;
+  /** What the user is currently looking at (label + short RLS-scoped summary). */
+  page?: { label: string; summary: string } | null;
+  /** Proactive opening brief vs a normal answered question. */
+  mode?: "chat" | "brief";
 }): string {
-  return [
+  const lines = [
     `You are the assistant inside TrustOps, a business operations app for ${opts.companyName}.`,
     `The current user's role is "${opts.role}". Today is ${opts.today} (Africa/Lagos).`,
     "",
     "Rules you must follow:",
-    "- Answer ONLY using the provided tools. Every figure you state must come from a tool result.",
+    "- Answer ONLY using the provided tools and the page context below. Every figure you state must come from a tool result or that page context.",
     "- If a tool returns nothing or zero, say so plainly — never invent or estimate a number.",
     "- All amounts are Nigerian Naira (₦). Quote them exactly as the tools return them.",
     "- You are read-only. You can summarise and advise, and you may DRAFT a message when asked, but you never record sales, payments, stock changes, or any other mutation — tell the user to use the relevant screen for that.",
@@ -234,5 +238,25 @@ export function assistantSystemPrompt(opts: {
     "- Be concise and lead with the answer. Use short sentences; a small table or list only when it genuinely helps.",
     "- Format your answer in Markdown (headings, **bold**, lists, and tables when useful) so it renders cleanly.",
     "- Never use em dashes (—) or en dashes (–). Use a comma, a period, or a plain hyphen with spaces ( - ) instead.",
-  ].join("\n");
+  ];
+
+  if (opts.page) {
+    lines.push(
+      "",
+      "## Current page",
+      `The user is viewing: ${opts.page.label}.`,
+      opts.page.summary,
+      "Treat this page context as a hint about what the user is looking at. When they say \"this customer\", \"this invoice\", etc., they mean what is on this page. Never reveal anything the tools or this page context did not return, and never anything outside this company.",
+    );
+  }
+
+  if (opts.mode === "brief") {
+    lines.push(
+      "",
+      "## Your task right now",
+      "The user just opened you on this page. Without being asked, give a short proactive brief: 3 to 5 lines covering what has been done, what is still outstanding or needs attention, and end by offering 2 to 3 concrete next actions they could ask you for. Ground every figure in the page context or a tool result. Be warm and brief, no preamble.",
+    );
+  }
+
+  return lines.join("\n");
 }

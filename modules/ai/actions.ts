@@ -55,6 +55,11 @@ export async function sendAssistantMessage(input: {
   const prep = await prepareTurn(input);
   if (!prep.ok) return { ok: false, error: prep.error, conversationId: prep.conversationId };
   const t = prep.turn;
+  if (t.conversationId === null) {
+    // The non-streaming path is always a normal chat turn, so this is
+    // unreachable; the guard keeps the persisted-conversation contract type-safe.
+    return { ok: false, error: "Could not start a conversation." };
+  }
 
   let result;
   try {

@@ -4,6 +4,7 @@ import * as React from "react";
 import { TopBar } from "./topbar";
 import { Sidebar } from "./sidebar";
 import { BottomTabBar } from "./bottom-tab-bar";
+import { CopilotDock } from "@/components/copilot/copilot-dock";
 import type { Branch, Notification } from "@/modules/shared/types";
 
 const BRANCH_STORAGE_KEY = "trustops.currentBranchId";
@@ -16,6 +17,8 @@ interface AppShellProps {
   notifications: Notification[];
   unreadCount: number;
   isPlatformAdmin?: boolean;
+  aiConfigured?: boolean;
+  aiEnabled?: boolean;
   children: React.ReactNode;
 }
 
@@ -33,6 +36,8 @@ export function AppShell({
   notifications,
   unreadCount,
   isPlatformAdmin,
+  aiConfigured = false,
+  aiEnabled = false,
   children,
 }: AppShellProps) {
   const primaryBranch = branches.find((b) => b.is_primary) ?? branches[0];
@@ -70,6 +75,7 @@ export function AppShell({
         <div className="mx-auto max-w-content">{children}</div>
       </main>
       <BottomTabBar isPlatformAdmin={isPlatformAdmin} />
+      <CopilotDock configured={aiConfigured} enabled={aiEnabled} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { runAssistantStream } from "@/modules/ai/orchestrator";
-import { persistAssistantTurn, prepareTurn } from "@/modules/ai/turn";
+import { logBriefUsage, persistAssistantTurn, prepareTurn } from "@/modules/ai/turn";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -13,7 +13,12 @@ export const runtime = "nodejs";
  * Events: {type:"delta",text} · {type:"done",conversationId,sources,text} · {type:"error",error}
  */
 export async function POST(request: NextRequest) {
-  let body: { conversationId?: string | null; text?: string };
+  let body: {
+    conversationId?: string | null;
+    text?: string;
+    pathname?: string | null;
+    mode?: "chat" | "brief";
+  };
   try {
     body = await request.json();
   } catch {
@@ -29,6 +34,8 @@ export async function POST(request: NextRequest) {
       const prep = await prepareTurn({
         conversationId: body.conversationId ?? null,
         text: body.text ?? "",
+        pathname: body.pathname ?? null,
+        mode: body.mode ?? "chat",
       });
       if (!prep.ok) {
         send({ type: "error", error: prep.error, conversationId: prep.conversationId });
@@ -44,13 +51,19 @@ export async function POST(request: NextRequest) {
           userMessage: t.text,
           onText: (delta) => send({ type: "delta", text: delta }),
         });
-        await persistAssistantTurn({
-          conversationId: t.conversationId,
-          companyId: t.companyId,
-          userId: t.userId,
-          result,
-          sources: result.sources,
-        });
+        // A brief belongs to no conversation: log only its cost. A chat turn is
+        // persisted as a message + usage and bumps the conversation.
+        if (t.mode === "brief" || t.conversationId === null) {
+          await logBriefUsage({ companyId: t.companyId, userId: t.userId, result });
+        } else {
+          await persistAssistantTurn({
+            conversationId: t.conversationId,
+            companyId: t.companyId,
+            userId: t.userId,
+            result,
+            sources: result.sources,
+          });
+        }
         send({
           type: "done",
           conversationId: t.conversationId,
