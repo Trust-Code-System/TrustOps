@@ -5,6 +5,7 @@ import {
   getCustomerInvoices,
   getCustomerTotalSpend,
 } from "@/modules/customers/queries";
+import { getCustomerTrustScore } from "@/modules/customers/trust";
 import { CustomerDetail } from "./customer-detail";
 
 export default async function CustomerDetailPage({
@@ -17,9 +18,10 @@ export default async function CustomerDetailPage({
   const customer = await getCustomer(params.id);
   if (!customer) notFound();
 
-  const [invoices, totalSpend] = await Promise.all([
+  const [invoices, totalSpend, trust] = await Promise.all([
     getCustomerInvoices(params.id),
     getCustomerTotalSpend(params.id),
+    getCustomerTrustScore(params.id),
   ]);
 
   return (
@@ -27,6 +29,7 @@ export default async function CustomerDetailPage({
       customer={customer}
       invoices={invoices}
       totalSpend={totalSpend}
+      trust={trust}
       canManage={canManageOrg(profile.role)}
     />
   );

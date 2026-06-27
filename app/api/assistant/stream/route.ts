@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
           system: t.system,
           history: t.history,
           userMessage: t.text,
+          skipPrimary: t.capReached,
           onText: (delta) => send({ type: "delta", text: delta }),
         });
         // A brief belongs to no conversation: log only its cost. A chat turn is

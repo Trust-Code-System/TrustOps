@@ -37,8 +37,18 @@ specs live in [`trustops-phase-0-1-brief.md`](trustops-phase-0-1-brief.md) (0–
    Optional, blank-safe (features degrade gracefully when unset):
    - `ANTHROPIC_API_KEY` (+ `AI_MODEL`, default `claude-opus-4-8`) — the AI
      assistant; blank ⇒ assistant disabled, no live calls.
+   - **AI fallbacks (auto-failover, in order Claude → Groq → Gemini):**
+     `GROQ_API_KEY` (+ `GROQ_MODEL`, default `llama-3.3-70b-versatile`;
+     `GROQ_VISION_MODEL` for receipt OCR) and `GEMINI_API_KEY` (+ `GEMINI_MODEL`,
+     default `gemini-2.0-flash`). When Claude is over its spend cap or its API
+     errors (e.g. out of credits), the next configured provider answers
+     automatically — the user never sees a provider error. Backups speak the
+     OpenAI-compatible API; their spend is not counted against the Claude cap.
    - `RESEND_API_KEY` / `EMAIL_FROM` and `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_ID` —
      real email/WhatsApp delivery; blank ⇒ simulated no-op sends.
+     `WHATSAPP_VERIFY_TOKEN` / `WHATSAPP_APP_SECRET` enable the inbound WhatsApp
+     command webhook. `PAYSTACK_SECRET_KEY` (or `MONNIFY_*`) + `PAYMENTS_PROVIDER`
+     enable live online payments (blank ⇒ simulated gateway).
 3. Apply **all** migrations in `supabase/migrations` in order
    (`0001_schema` → … → `0010_ai`). Either:
    - **Supabase SQL editor** — paste the files in order and Run. The editor may

@@ -30,6 +30,7 @@ export async function recordSale(
 
   const payload = {
     customer_id: d.customerId,
+    client_uuid: d.clientUuid ?? null,
     branch_id: d.branchId ?? null,
     due_at: d.dueAt ?? null,
     discount: d.discountKobo,

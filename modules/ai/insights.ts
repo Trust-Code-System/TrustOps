@@ -1,10 +1,18 @@
 import "server-only";
 
+import Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatNaira } from "@/lib/money";
+import { aiConfigured } from "@/modules/ai/orchestrator";
+import { providerChain, fallbackOnlyChain } from "@/modules/ai/providers";
+import { simpleOpenAICompat } from "@/modules/ai/openai-compat";
+import { costUsdCents } from "@/modules/ai/pricing";
 import type { AiInsightSeverity } from "@/modules/shared/types";
 
 type Admin = ReturnType<typeof createAdminClient>;
+
+// A cheap model for the daily summary — it only rephrases grounded facts.
+const INSIGHTS_MODEL = process.env.AI_INSIGHTS_MODEL ?? "claude-haiku-4-5";
 type DraftInsight = {
   kind: string;
   severity: AiInsightSeverity;
@@ -124,16 +132,112 @@ async function generateForCompany(admin: Admin, companyId: string): Promise<Draf
   return out;
 }
 
+/**
+ * Optional LLM briefing: rephrases the RULE-BASED drafts (which carry the exact
+ * figures) into one warm 1-2 sentence summary. The model is told to use only the
+ * given facts and never change a number, so the "every figure traces to a query"
+ * guarantee holds. Gated by AI config + the company's enable flag + monthly cap;
+ * spend is logged to ai_usage. Returns null (falls back to rule-based cards) on
+ * any miss, so insights never depend on the LLM.
+ */
+async function maybeSummarize(
+  admin: Admin,
+  companyId: string,
+  drafts: DraftInsight[],
+): Promise<DraftInsight | null> {
+  if (drafts.length === 0 || !aiConfigured()) return null;
+
+  const { data: settings } = await admin
+    .from("ai_settings")
+    .select("enabled, monthly_cap_usd_cents")
+    .eq("company_id", companyId)
+    .maybeSingle();
+  const s = settings as { enabled: boolean; monthly_cap_usd_cents: number | null } | null;
+  if (!s?.enabled) return null;
+
+  let capReached = false;
+  if (s.monthly_cap_usd_cents !== null) {
+    const monthStart = `${lagosToday().slice(0, 7)}-01`;
+    const { data: usage } = await admin
+      .from("ai_usage")
+      .select("cost_usd_cents")
+      .eq("company_id", companyId)
+      .gte("created_at", `${monthStart}T00:00:00Z`);
+    const spent = ((usage as { cost_usd_cents: number }[] | null) ?? []).reduce(
+      (a, u) => a + Number(u.cost_usd_cents),
+      0,
+    );
+    capReached = spent >= s.monthly_cap_usd_cents;
+  }
+  const chain = capReached ? fallbackOnlyChain() : providerChain();
+  if (chain.length === 0) return null;
+
+  const facts = drafts.map((d) => `- ${d.title}: ${d.body}`).join("\n");
+  const sys =
+    "You write a 1-2 sentence morning briefing for a Nigerian small-business owner. Use ONLY the facts provided; never invent or change a number. Be warm, plain, and specific. No markdown, no preamble, no em dashes.";
+  const user = `Today's signals:\n${facts}\n\nWrite the briefing.`;
+
+  // Try each provider; any failure falls over to the next. Never throws upward.
+  let body = "";
+  let usedModel = "";
+  let inTok = 0;
+  let outTok = 0;
+  for (const cfg of chain) {
+    try {
+      if (cfg.kind === "anthropic") {
+        const client = new Anthropic();
+        const resp = await client.messages.create({
+          model: INSIGHTS_MODEL,
+          max_tokens: 200,
+          system: sys,
+          messages: [{ role: "user", content: user }],
+        });
+        const block = resp.content.find((b) => b.type === "text");
+        body = block && block.type === "text" ? block.text.trim() : "";
+        usedModel = INSIGHTS_MODEL;
+        inTok = resp.usage.input_tokens;
+        outTok = resp.usage.output_tokens;
+      } else {
+        const r = await simpleOpenAICompat(cfg, { system: sys, user, maxTokens: 200 });
+        body = r.text.trim();
+        usedModel = cfg.model;
+        inTok = r.inputTokens;
+        outTok = r.outputTokens;
+      }
+      if (body) break;
+    } catch {
+      body = "";
+    }
+  }
+  if (!body || !usedModel) return null;
+
+  await admin.from("ai_usage").insert({
+    company_id: companyId,
+    user_id: null,
+    conversation_id: null,
+    model: usedModel,
+    input_tokens: inTok,
+    output_tokens: outTok,
+    cost_usd_cents: usedModel.startsWith("claude")
+      ? costUsdCents(usedModel, { input_tokens: inTok, output_tokens: outTok })
+      : 0,
+  });
+
+  return { kind: "summary", severity: "neutral", title: "Today's briefing", body };
+}
+
 /** Regenerate insights for every company. Idempotent: clear then re-insert. */
 export async function runInsightsJob(): Promise<void> {
   const admin = createAdminClient();
   const { data: companies } = await admin.from("companies").select("id");
   for (const company of (companies as { id: string }[] | null) ?? []) {
     const drafts = await generateForCompany(admin, company.id);
+    const summary = await maybeSummarize(admin, company.id, drafts);
+    const all = summary ? [summary, ...drafts] : drafts;
     await admin.from("ai_insights").delete().eq("company_id", company.id);
-    if (drafts.length > 0) {
+    if (all.length > 0) {
       await admin.from("ai_insights").insert(
-        drafts.map((d) => ({ company_id: company.id, ...d })),
+        all.map((d) => ({ company_id: company.id, ...d })),
       );
     }
   }

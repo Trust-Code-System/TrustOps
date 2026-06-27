@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, UserPlus } from "lucide-react";
 import { recordSale, quickAddCustomer } from "@/modules/sales/actions";
+import { enqueueSale } from "@/lib/offline/sale-queue";
 import { nairaToKobo, koboToNaira, formatNaira } from "@/lib/money";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -126,9 +127,10 @@ export function RecordSaleForm({
       return setError("Enter a payment amount greater than zero");
     }
 
-    setSubmitting(true);
-    const res = await recordSale({
+    // Idempotency key so an offline replay can never duplicate this sale.
+    const saleInput = {
       customerId,
+      clientUuid: crypto.randomUUID(),
       branchId: branchId || null,
       discountKobo,
       items: cleanItems,
@@ -138,7 +140,30 @@ export function RecordSaleForm({
             method: payMethod as "cash" | "transfer" | "card" | "other",
           }
         : null,
-    });
+    };
+
+    setSubmitting(true);
+
+    // Offline: save on-device; the PWA registrar syncs it when back online.
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      await enqueueSale(saleInput);
+      setSubmitting(false);
+      toast("Saved offline — will sync when you're back online", "success");
+      router.push("/invoices");
+      return;
+    }
+
+    let res;
+    try {
+      res = await recordSale(saleInput);
+    } catch {
+      // Network dropped mid-submit — fall back to the offline queue.
+      await enqueueSale(saleInput);
+      setSubmitting(false);
+      toast("Network issue — sale saved offline, will sync", "success");
+      router.push("/invoices");
+      return;
+    }
     setSubmitting(false);
 
     if (!res.ok) {

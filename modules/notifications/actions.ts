@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext, canManageOrg } from "@/modules/auth/session";
 import type { ActionState } from "@/modules/auth/schemas";
-import { enqueueJob } from "@/modules/jobs/queue";
+import { enqueueJob, enqueueNotification } from "@/modules/jobs/queue";
 import { notificationSettingsSchema } from "./schemas";
 
 export async function markNotificationRead(id: string): Promise<void> {
@@ -30,6 +30,61 @@ export async function sendReceipt(
     companyId: ctx.profile.company_id,
     payload: { invoice_id: invoiceId },
     dedupeKey: `job:receipt:${invoiceId}`,
+  });
+  return { ok: true };
+}
+
+/**
+ * Send a payment reminder for one invoice now. Reads the invoice + customer
+ * under the caller's RLS scope, then enqueues a reminder through the existing
+ * notification engine. Used by the "Send reminder" copilot action and elsewhere.
+ */
+export async function sendInvoiceReminder(
+  invoiceId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const ctx = await getSessionContext();
+  if (!ctx) return { ok: false, error: "Your session has expired. Log in again." };
+
+  const supabase = createClient();
+  // RLS confines this to the caller's company.
+  const { data: inv } = await supabase
+    .from("invoices")
+    .select("id, invoice_number, total, customer:customers(full_name, phone, email)")
+    .eq("id", invoiceId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!inv) return { ok: false, error: "Invoice not found" };
+
+  const invoice = inv as unknown as {
+    id: string;
+    invoice_number: string;
+    total: number;
+    customer: { full_name: string; phone: string | null; email: string | null } | null;
+  };
+
+  const { data: pays } = await supabase
+    .from("payments")
+    .select("amount")
+    .eq("invoice_id", invoiceId);
+  const paid = ((pays as { amount: number }[] | null) ?? []).reduce((s, p) => s + p.amount, 0);
+  const balance = invoice.total - paid;
+  if (balance <= 0) return { ok: false, error: "This invoice is already fully paid" };
+
+  const cust = invoice.customer;
+  const channel = cust?.phone ? "whatsapp" : cust?.email ? "email" : "in_app";
+  await enqueueNotification({
+    companyId: ctx.profile.company_id,
+    channel,
+    template: "invoice_reminder",
+    payload: {
+      invoice_number: invoice.invoice_number,
+      customer_name: cust?.full_name ?? "Customer",
+      company_name: "TrustOps",
+      balance,
+      stage: "manual",
+    },
+    target: channel === "whatsapp" ? cust?.phone ?? null : channel === "email" ? cust?.email ?? null : null,
+    dedupeKey: `notif:reminder:${invoiceId}:manual:${Date.now()}`,
   });
   return { ok: true };
 }

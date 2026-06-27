@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Send } from "lucide-react";
 import { recordPayment, archiveInvoice } from "@/modules/invoices/actions";
+import { createPaymentLink } from "@/modules/payments/actions";
 import { sendReceipt } from "@/modules/notifications/actions";
 import { effectiveStatus } from "@/modules/invoices/status";
 import { nairaToKobo, formatNaira } from "@/lib/money";
@@ -36,12 +37,27 @@ export function InvoiceDetailView({
   const [payOpen, setPayOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [sendingReceipt, setSendingReceipt] = useState(false);
+  const [linking, setLinking] = useState(false);
 
   async function handleSendReceipt() {
     setSendingReceipt(true);
     const res = await sendReceipt(invoice.id);
     setSendingReceipt(false);
     toast(res.ok ? "Receipt queued for delivery" : res.error ?? "Could not queue receipt", res.ok ? "success" : "error");
+  }
+
+  async function handlePaymentLink() {
+    setLinking(true);
+    const res = await createPaymentLink(invoice.id);
+    setLinking(false);
+    if (!res.ok) return toast(res.error, "error");
+    try {
+      await navigator.clipboard.writeText(res.url);
+      toast("Payment link copied — share it with your customer", "success");
+    } catch {
+      toast("Payment link ready", "success");
+    }
+    window.open(res.url, "_blank", "noopener");
   }
 
   const paid = payments.reduce((s, p) => s + p.amount, 0);
@@ -80,6 +96,11 @@ export function InvoiceDetailView({
         </div>
         <div className="flex flex-wrap gap-2">
           {canPay && <Button onClick={() => setPayOpen(true)}>Record payment</Button>}
+          {canPay && (
+            <Button variant="secondary" onClick={handlePaymentLink} isLoading={linking}>
+              Payment link
+            </Button>
+          )}
           <Button variant="secondary" onClick={handleSendReceipt} isLoading={sendingReceipt}>
             <Send /> Send receipt
           </Button>

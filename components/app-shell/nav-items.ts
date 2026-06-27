@@ -11,6 +11,7 @@ import {
   Orbit,
   LifeBuoy,
   ShieldCheck,
+  Store,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,6 +37,7 @@ export const SIDEBAR_ITEMS: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Expenses", href: "/expenses", icon: WalletCards },
   { label: "Reports", href: "/reports", icon: FileDown },
+  { label: "Storefront", href: "/storefront", icon: Store },
   { label: "Assistant", href: "/assistant", icon: Orbit },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
@@ -57,6 +59,7 @@ export const MORE_ITEMS: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Expenses", href: "/expenses", icon: WalletCards },
   { label: "Reports", href: "/reports", icon: FileDown },
+  { label: "Storefront", href: "/storefront", icon: Store },
   { label: "Assistant", href: "/assistant", icon: Orbit },
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "Help Center", href: "/help", icon: LifeBuoy },
