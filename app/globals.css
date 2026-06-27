@@ -115,6 +115,73 @@
   --dur-slow: 240ms;
 }
 
+/*
+ * Light theme — opt-in via [data-theme="light"] on <html> (set only inside the
+ * authenticated app; the marketing landing + auth stay on the dark canvas).
+ * White surfaces, indigo/violet accents, dark text. Ramps run the normal
+ * direction (low gray = subtle fill, high gray = dark text); the primary ramp
+ * keeps a vivid 600 for buttons with darker 700+ for hover and accent text on
+ * white. The semantic text/border tokens reference the gray/primary vars, so
+ * they flip automatically — only the raw ramps + surfaces + shadows are redefined.
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Brand — indigo/violet, tuned for a white canvas */
+  --color-primary-50: #f1eefe; /* light chip / badge fill */
+  --color-primary-100: #e5e0fd; /* focus ring base, subtle fill */
+  --color-primary-200: #cdc4fb; /* active subtle bg / border */
+  --color-primary-300: #ab9ef6;
+  --color-primary-400: #8a78f0;
+  --color-primary-500: #6d5ce8; /* base brand accent */
+  --color-primary-600: #5b4ee2; /* primary button */
+  --color-primary-700: #4838c4; /* button hover + accent text (darker on light) */
+  --color-primary-800: #352a8f;
+  --color-primary-900: #221a5c; /* darkest, rare */
+
+  /* Neutrals — normal direction: 50 = subtle fill, 900 = headings */
+  --color-gray-50: #f7f7fa; /* subtle fill, hover base */
+  --color-gray-100: #f1f0f5; /* hover row */
+  --color-gray-200: #e6e4ed; /* borders, dividers */
+  --color-gray-300: #d6d3de; /* input border */
+  --color-gray-400: #b7b3c2; /* disabled border / scrollbar */
+  --color-gray-500: #847d93; /* placeholder text */
+  --color-gray-600: #635c72; /* muted / secondary text */
+  --color-gray-700: #463f54; /* body text secondary */
+  --color-gray-800: #2b2638; /* body text */
+  --color-gray-900: #18141f; /* headings, primary text */
+
+  /* Semantic — Money & status. Light tint bg + darker text/icon. */
+  --color-success-50: #e7f6ee;
+  --color-success-500: #15803d; /* paid, revenue up, in stock (readable on white) */
+  --color-success-700: #166534;
+
+  --color-danger-50: #fdecec;
+  --color-danger-500: #dc2626; /* unpaid, revenue down, out of stock */
+  --color-danger-700: #b91c1c;
+
+  --color-warning-50: #fdf4e3;
+  --color-warning-500: #d97706; /* low stock, due soon, pending */
+  --color-warning-700: #92400e;
+
+  --color-info-50: #e8f0fd;
+  --color-info-500: #2563eb; /* neutral informational only */
+
+  /* Surfaces — white cards on a near-white page; the chrome (sidebar/topbar) is white */
+  --surface-page: #f6f5fa;
+  --surface-card: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-overlay: rgba(24, 20, 31, 0.45); /* modal scrim */
+
+  /* Shadows — soft and tinted for depth on white surfaces */
+  --shadow-xs: 0 1px 2px rgba(24, 20, 31, 0.06);
+  --shadow-sm: 0 1px 3px rgba(24, 20, 31, 0.08), 0 1px 2px rgba(24, 20, 31, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(24, 20, 31, 0.1),
+    0 2px 6px -2px rgba(24, 20, 31, 0.06);
+  --shadow-lg: 0 16px 32px -8px rgba(24, 20, 31, 0.14),
+    0 6px 12px -4px rgba(24, 20, 31, 0.08);
+}
+
 @layer base {
   * {
     border-color: var(--border-subtle);

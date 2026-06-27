@@ -35,25 +35,25 @@ export function Sidebar() {
       href={href}
       aria-current={isActive(href) ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2.5 text-[15px] font-[600] transition-colors duration-fast lg:justify-start justify-center",
+        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-[600] transition-colors duration-fast lg:justify-start justify-center",
         isActive(href)
           ? "bg-primary-600 text-text-on-primary"
           : "text-text-secondary hover:bg-gray-100",
       )}
     >
-      <Icon className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+      <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
       <span className="hidden lg:inline">{label}</span>
     </Link>
   );
 
   return (
-    <aside className="fixed inset-y-0 left-0 top-14 z-30 hidden w-16 flex-col border-r border-border-subtle bg-surface-card p-3 lg:w-60 md:flex">
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto" aria-label="Primary">
+    <aside className="fixed inset-y-0 left-0 top-14 z-30 hidden w-16 flex-col border-r border-border-subtle bg-surface-card p-2 lg:w-60 md:flex">
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto" aria-label="Primary">
         {main.map((item) => link(item.href, item.label, item.icon))}
 
         {intelligence.length > 0 && (
           <>
-            <p className="mt-4 mb-1 hidden px-3 text-caption font-[600] uppercase tracking-[0.08em] text-text-muted lg:block">
+            <p className="mt-3 mb-0.5 hidden px-3 text-caption font-[600] uppercase tracking-[0.08em] text-text-muted lg:block">
               Intelligence
             </p>
             {intelligence.map((item) => link(item.href, item.label, item.icon))}
@@ -61,27 +61,27 @@ export function Sidebar() {
         )}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-1 border-t border-border-subtle pt-3">
+      <div className="mt-auto flex flex-col gap-0.5 border-t border-border-subtle pt-2">
         <Link
           href="/sales/new"
-          className="mb-2 flex items-center justify-center gap-2 rounded-md bg-primary-600 px-3 py-2.5 text-[15px] font-[600] text-text-on-primary transition-colors hover:bg-primary-700"
+          className="mb-1 flex items-center justify-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-[600] text-text-on-primary transition-colors hover:bg-primary-700"
         >
-          <Plus className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <Plus className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
           <span className="hidden lg:inline">Record Sale</span>
         </Link>
         <Link
           href="/help"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-small text-text-secondary transition-colors hover:bg-gray-100 lg:justify-start justify-center"
+          className="flex items-center gap-3 rounded-md px-3 py-1.5 text-small text-text-secondary transition-colors hover:bg-gray-100 lg:justify-start justify-center"
         >
-          <LifeBuoy className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+          <LifeBuoy className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
           <span className="hidden lg:inline">Help Center</span>
         </Link>
         <form action={signOut}>
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-small text-text-secondary transition-colors hover:bg-gray-100 lg:justify-start justify-center"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-small text-text-secondary transition-colors hover:bg-gray-100 lg:justify-start justify-center"
           >
-            <LogOut className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+            <LogOut className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
             <span className="hidden lg:inline">Sign out</span>
           </button>
         </form>
